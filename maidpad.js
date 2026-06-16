@@ -116,6 +116,12 @@
     <div class="mc"><div class="ml">Hoje</div><div id="mdy"><div class="msk"></div></div></div>
     <div class="mc"><div class="ml">Atividades em tempo real</div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
   </div>
+  <div class="mg mw" style="margin-bottom:14px">
+    <div class="mc">
+      <div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div>
+      <div class="mfeed" id="mp-overdue"><div class="msk"></div></div>
+    </div>
+  </div>
   <div class="mc">
     <div class="ml">Acesso rápido</div>
     <div class="mlinks">
@@ -264,6 +270,7 @@
 
     gi('mpp').className = 'mpp';
     gi('mpt').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    fetchOverdueClients();
     clearTimeout(timer);
     timer = setTimeout(fetchAll, 30000);
   }
@@ -293,3 +300,69 @@
     } catch (e) {}
   }, 3000);
 })();
+
+// ─── Clientes sem limpeza recente ────────────────────────────────────────────
+async function fetchOverdueClients() {
+  try {
+    const r = await fetch('/Dashboard/Client/SearchClients?search=&stages=2&pageSize=200', { credentials: 'include' });
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const clients = d.Clients || [];
+
+    const today = new Date();
+    const withDays = clients
+      .filter(c => c.LastJobDate && c.Frequency)
+      .map(c => {
+        const last = new Date(c.LastJobDate);
+        const daysSince = Math.floor((today - last) / 86400000);
+        const freqDays = freqToDays(c.Frequency);
+        const overdue = daysSince - freqDays;
+        return { ...c, daysSince, freqDays, overdue };
+      })
+      .filter(c => c.overdue > 0)
+      .sort((a, b) => b.overdue - a.overdue)
+      .slice(0, 10);
+
+    const el = document.getElementById('mp-overdue');
+    if (!el) return;
+
+    if (!withDays.length) {
+      el.innerHTML = '<div class="msub">Nenhum cliente atrasado</div>';
+      return;
+    }
+
+    el.innerHTML = withDays.map(c => {
+      const last = new Date(c.LastJobDate).toLocaleDateString('pt-BR');
+      const color = c.overdue > 14 ? '#ff5f5f' : c.overdue > 7 ? '#f5a623' : '#8b92a8';
+      return `<div class="mact">
+        <div style="width:42px;text-align:center;flex-shrink:0">
+          <div style="font-family:monospace;font-size:16px;font-weight:500;color:${color}">${c.overdue}d</div>
+          <div style="font-size:10px;color:#5a6278">atraso</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.Name} ${c.LastName || ''}</div>
+          <div style="font-size:11px;color:#8b92a8">Última: ${last} · Freq: ${freqLabel(c.Frequency)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    const el = document.getElementById('mp-overdue');
+    if (el) el.innerHTML = `<div class="merr">Erro: ${e.message}</div>`;
+  }
+}
+
+function freqToDays(freq) {
+  const map = {
+    'Weekly': 7, 'BiWeekly': 14, 'EveryThreeWeeks': 21,
+    'Monthly': 30, 'EveryTwoMonths': 60, 'EveryThreeMonths': 90,
+  };
+  return map[freq] || 30;
+}
+
+function freqLabel(freq) {
+  const map = {
+    'Weekly': 'Semanal', 'BiWeekly': 'Quinzenal', 'EveryThreeWeeks': '3 semanas',
+    'Monthly': 'Mensal', 'EveryTwoMonths': '2 meses', 'EveryThreeMonths': '3 meses',
+  };
+  return map[freq] || freq;
+}
