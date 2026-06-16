@@ -1,1 +1,296 @@
-javascript:%28function%28%29%7B%20if%28document.getElementById%28%27mp-toggle%27%29%29return%3B%20var%20style%3Ddocument.createElement%28%27style%27%29%3B%20style.textContent%3D%60%20%23mp-toggle%7Bposition%3Afixed%3Bbottom%3A24px%3Bright%3A24px%3Bz-index%3A99998%3Bwidth%3A48px%3Bheight%3A48px%3Bborder-radius%3A50%25%3Bbackground%3A%235be49b%3Bborder%3Anone%3Bcursor%3Apointer%3Bfont-size%3A22px%3Bbox-shadow%3A0%204px%2016px%20rgba%2891%2C228%2C155%2C0.4%29%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3Btransition%3Atransform%20.2s%3B%7D%20%23mp-toggle%3Ahover%7Btransform%3Ascale%281.1%29%3B%7D%20%23mp-root%7Bposition%3Afixed%3Binset%3A0%3Bz-index%3A99999%3Bbackground%3Argba%280%2C0%2C0%2C0.6%29%3Bbackdrop-filter%3Ablur%284px%29%3Bdisplay%3Anone%3Balign-items%3Aflex-start%3Bjustify-content%3Acenter%3Bpadding%3A20px%3Boverflow-y%3Aauto%3B%7D%20%23mp-root.open%7Bdisplay%3Aflex%3B%7D%20%23mp-panel%7Bbackground%3A%230f1117%3Bborder%3A1px%20solid%20%23252a38%3Bborder-radius%3A16px%3Bwidth%3A100%25%3Bmax-width%3A1200px%3Bpadding%3A28px%3Bfont-family%3A-apple-system%2CBlinkMacSystemFont%2Csans-serif%3Bfont-size%3A14px%3Bcolor%3A%23e8eaf0%3Bposition%3Arelative%3B%7D%20%23mp-x%7Bposition%3Aabsolute%3Btop%3A16px%3Bright%3A16px%3Bbackground%3Anone%3Bborder%3A1px%20solid%20%23252a38%3Bcolor%3A%238b92a8%3Bwidth%3A32px%3Bheight%3A32px%3Bborder-radius%3A8px%3Bcursor%3Apointer%3Bfont-size%3A16px%3B%7D%20%23mp-x%3Ahover%7Bborder-color%3A%235be49b%3Bcolor%3A%235be49b%3B%7D%20.mh%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Aspace-between%3Bmargin-bottom%3A24px%3Bpadding-bottom%3A16px%3Bborder-bottom%3A1px%20solid%20%23252a38%3B%7D%20.mb%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A10px%3B%7D%20.mbi%7Bwidth%3A32px%3Bheight%3A32px%3Bbackground%3Argba%2891%2C228%2C155%2C0.12%29%3Bborder%3A1px%20solid%20%235be49b%3Bborder-radius%3A8px%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3Bfont-size%3A16px%3B%7D%20.mbn%7Bfont-size%3A15px%3Bfont-weight%3A600%3B%7D%20.mbs%7Bfont-size%3A12px%3Bcolor%3A%238b92a8%3B%7D%20.mst%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A10px%3B%7D%20.mp%7Bwidth%3A8px%3Bheight%3A8px%3Bborder-radius%3A50%25%3Bbackground%3A%235be49b%3Banimation%3Ampp%202s%20infinite%3B%7D%20.mp.off%7Bbackground%3A%235a6278%3Banimation%3Anone%3B%7D%20%40keyframes%20mpp%7B0%25%7Bbox-shadow%3A0%200%200%200%20rgba%2891%2C228%2C155%2C0.4%29%7D70%25%7Bbox-shadow%3A0%200%200%206px%20rgba%2891%2C228%2C155%2C0%29%7D100%25%7Bbox-shadow%3A0%200%200%200%20rgba%2891%2C228%2C155%2C0%29%7D%7D%20.mt%7Bfont-size%3A11px%3Bcolor%3A%238b92a8%3Bfont-family%3Amonospace%3B%7D%20.mbtn%7Bbackground%3Anone%3Bborder%3A1px%20solid%20%23252a38%3Bcolor%3A%238b92a8%3Bpadding%3A5px%2012px%3Bborder-radius%3A6px%3Bcursor%3Apointer%3Bfont-size%3A12px%3B%7D%20.mbtn%3Ahover%7Bborder-color%3A%235be49b%3Bcolor%3A%235be49b%3B%7D%20.mg%7Bdisplay%3Agrid%3Bgrid-template-columns%3Arepeat%28auto-fit%2Cminmax%28240px%2C1fr%29%29%3Bgap%3A14px%3Bmargin-bottom%3A14px%3B%7D%20.mw%7Bgrid-template-columns%3A1fr%3B%7D%20.mhalf%7Bgrid-template-columns%3A1fr%201fr%3B%7D%20.mc%7Bbackground%3A%23181c27%3Bborder%3A1px%20solid%20%23252a38%3Bborder-radius%3A12px%3Bpadding%3A18px%3B%7D%20.ml%7Bfont-size%3A11px%3Bfont-weight%3A500%3Bletter-spacing%3A.08em%3Btext-transform%3Auppercase%3Bcolor%3A%238b92a8%3Bmargin-bottom%3A12px%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Aspace-between%3B%7D%20.ml%20a%7Bcolor%3A%238b92a8%3Btext-decoration%3Anone%3Bfont-size%3A11px%3B%7D%20.ml%20a%3Ahover%7Bcolor%3A%235be49b%3B%7D%20.mbig%7Bfont-family%3Amonospace%3Bfont-size%3A40px%3Bfont-weight%3A500%3Bline-height%3A1%3Bmargin-bottom%3A4px%3B%7D%20.msub%7Bfont-size%3A12px%3Bcolor%3A%238b92a8%3B%7D%20.mrow%7Bdisplay%3Aflex%3Bgap%3A20px%3Bflex-wrap%3Awrap%3Bmargin-top%3A12px%3B%7D%20.mv%7Bfont-family%3Amonospace%3Bfont-size%3A20px%3Bfont-weight%3A500%3B%7D%20.mlb%7Bfont-size%3A11px%3Bcolor%3A%238b92a8%3B%7D%20.mbucs%7Bdisplay%3Aflex%3Bgap%3A12px%3Bflex-wrap%3Awrap%3Bmargin-top%3A4px%3B%7D%20.mbuc%7Bflex%3A1%3Bmin-width%3A80px%3Bpadding%3A12px%3Bborder-radius%3A8px%3Bborder%3A1px%20solid%20%23252a38%3B%7D%20.mbuc.ov%7Bborder-color%3Argba%28255%2C95%2C95%2C.3%29%3Bbackground%3Argba%28255%2C95%2C95%2C.07%29%3B%7D%20.mbuc.sn%7Bborder-color%3Argba%28245%2C166%2C35%2C.3%29%3Bbackground%3Argba%28245%2C166%2C35%2C.07%29%3B%7D%20.mbuc.lt%7Bborder-color%3Argba%2891%2C228%2C155%2C.2%29%3Bbackground%3Argba%2891%2C228%2C155%2C.05%29%3B%7D%20.mbamt%7Bfont-family%3Amonospace%3Bfont-size%3A22px%3Bfont-weight%3A500%3B%7D%20.mbuc.ov%20.mbamt%7Bcolor%3A%23ff5f5f%3B%7D%20.mbuc.sn%20.mbamt%7Bcolor%3A%23f5a623%3B%7D%20.mbuc.lt%20.mbamt%7Bcolor%3A%235be49b%3B%7D%20.mblbl%7Bfont-size%3A11px%3Bcolor%3A%238b92a8%3Bmargin-top%3A2px%3B%7D%20.mfeed%7Bdisplay%3Aflex%3Bflex-direction%3Acolumn%3Bmax-height%3A320px%3Boverflow-y%3Aauto%3B%7D%20.mact%7Bdisplay%3Aflex%3Bgap%3A10px%3Bpadding%3A9px%200%3Bborder-bottom%3A1px%20solid%20%23252a38%3B%7D%20.mact%3Alast-child%7Bborder-bottom%3Anone%3B%7D%20.maico%7Bwidth%3A28px%3Bheight%3A28px%3Bborder-radius%3A6px%3Bflex-shrink%3A0%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3Bfont-size%3A13px%3B%7D%20.maico.start%7Bbackground%3Argba%2891%2C228%2C155%2C.12%29%3B%7D%20.maico.route%7Bbackground%3Argba%2891%2C180%2C228%2C.12%29%3B%7D%20.maico.done%7Bbackground%3Argba%2891%2C228%2C155%2C.2%29%3B%7D%20.maico.other%7Bbackground%3A%23181c27%3Bborder%3A1px%20solid%20%23252a38%3B%7D%20.mamain%7Bfont-size%3A13px%3B%7D%20.matime%7Bfont-size%3A11px%3Bcolor%3A%238b92a8%3Bfont-family%3Amonospace%3B%7D%20.mscr%7Bfont-family%3Amonospace%3Bfont-size%3A48px%3Bfont-weight%3A500%3Bline-height%3A1%3Bmargin-bottom%3A4px%3B%7D%20.mstars%7Bcolor%3A%23f5a623%3Bfont-size%3A18px%3Bletter-spacing%3A2px%3B%7D%20.mdjg%7Bdisplay%3Agrid%3Bgrid-template-columns%3Arepeat%28auto-fill%2Cminmax%28180px%2C1fr%29%29%3Bgap%3A8px%3Bmargin-top%3A4px%3B%7D%20.mjc%7Bbackground%3A%230f1117%3Bborder%3A1px%20solid%20%23252a38%3Bborder-radius%3A8px%3Bpadding%3A10px%3B%7D%20.mjt%7Bfont-family%3Amonospace%3Bfont-size%3A11px%3Bcolor%3A%238b92a8%3B%7D%20.mjn%7Bfont-size%3A13px%3Bfont-weight%3A500%3Bmargin%3A2px%200%3B%7D%20.mjtg%7Bdisplay%3Aflex%3Bgap%3A5px%3Bflex-wrap%3Awrap%3Bmargin-top%3A5px%3B%7D%20.mtag%7Bfont-size%3A10px%3Bpadding%3A2px%207px%3Bborder-radius%3A10px%3Bfont-weight%3A500%3Bborder%3A1px%20solid%20%23252a38%3Bcolor%3A%238b92a8%3B%7D%20.mtag.rec%7Bborder-color%3Argba%2891%2C228%2C155%2C.3%29%3Bcolor%3A%235be49b%3B%7D%20.mtag.onc%7Bborder-color%3Argba%28245%2C166%2C35%2C.3%29%3Bcolor%3A%23f5a623%3B%7D%20.mlinks%7Bdisplay%3Aflex%3Bflex-wrap%3Awrap%3Bgap%3A8px%3B%7D%20.mlink%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A6px%3Bbackground%3A%230f1117%3Bborder%3A1px%20solid%20%23252a38%3Bcolor%3A%23e8eaf0%3Btext-decoration%3Anone%3Bpadding%3A7px%2013px%3Bborder-radius%3A8px%3Bfont-size%3A13px%3B%7D%20.mlink%3Ahover%7Bborder-color%3A%235be49b%3Bcolor%3A%235be49b%3B%7D%20.merr%7Bcolor%3A%23ff5f5f%3Bfont-size%3A12px%3Bfont-family%3Amonospace%3B%7D%20.msk%7Bbackground%3Alinear-gradient%2890deg%2C%23252a38%2025%25%2C%23181c27%2050%25%2C%23252a38%2075%25%29%3Bbackground-size%3A200%25%20100%25%3Banimation%3Amsh%201.5s%20infinite%3Bborder-radius%3A4px%3Bheight%3A36px%3B%7D%20%40keyframes%20msh%7B0%25%7Bbackground-position%3A200%25%200%7D100%25%7Bbackground-position%3A-200%25%200%7D%7D%20%40media%28max-width%3A700px%29%7B.mhalf%7Bgrid-template-columns%3A1fr%7D%7D%20%60%3B%20document.head.appendChild%28style%29%3B%20var%20btn%3Ddocument.createElement%28%27button%27%29%3B%20btn.id%3D%27mp-toggle%27%3Bbtn.textContent%3D%27%F0%9F%A7%B9%27%3B%20document.body.appendChild%28btn%29%3B%20var%20ov%3Ddocument.createElement%28%27div%27%29%3B%20ov.id%3D%27mp-root%27%3B%20ov.innerHTML%3D%27%3Cdiv%20id%3D%22mp-panel%22%3E%3Cbutton%20id%3D%22mp-x%22%3E%E2%9C%95%3C/button%3E%3Cdiv%20class%3D%22mh%22%3E%3Cdiv%20class%3D%22mb%22%3E%3Cdiv%20class%3D%22mbi%22%3E%F0%9F%A7%B9%3C/div%3E%3Cdiv%3E%3Cdiv%20class%3D%22mbn%22%3EPaula%5C%27s%20Cleaning%20Squad%3C/div%3E%3Cdiv%20class%3D%22mbs%22%3EMaidPad%20Dashboard%3C/div%3E%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mst%22%3E%3Cdiv%20class%3D%22mp%20off%22%20id%3D%22mpp%22%3E%3C/div%3E%3Cspan%20class%3D%22mt%22%20id%3D%22mpt%22%3E%E2%80%94%3C/span%3E%3Cbutton%20class%3D%22mbtn%22%20id%3D%22mpr%22%3E%E2%86%BB%20Atualizar%3C/button%3E%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mg%22%20id%3D%22mr1%22%3E%3Cdiv%20class%3D%22mc%22%3E%3Cdiv%20class%3D%22ml%22%3EClientes%20%3Ca%20href%3D%22/Dashboard/Client%22%3EVer%20%E2%86%92%3C/a%3E%3C/div%3E%3Cdiv%20id%3D%22mcl%22%3E%3Cdiv%20class%3D%22msk%22%3E%3C/div%3E%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mc%22%3E%3Cdiv%20class%3D%22ml%22%3ELimpezas%20esta%20semana%20%3Ca%20href%3D%22/Dashboard/Schedule%22%20id%3D%22msl%22%3EAgenda%20%E2%86%92%3C/a%3E%3C/div%3E%3Cdiv%20id%3D%22mjo%22%3E%3Cdiv%20class%3D%22msk%22%3E%3C/div%3E%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mc%22%3E%3Cdiv%20class%3D%22ml%22%3EAvalia%C3%A7%C3%B5es%20%2830%20dias%29%20%3Ca%20href%3D%22/Dashboard/Job/Reviews%22%3EVer%20%E2%86%92%3C/a%3E%3C/div%3E%3Cdiv%20id%3D%22mrv%22%3E%3Cdiv%20class%3D%22msk%22%3E%3C/div%3E%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mc%22%3E%3Cdiv%20class%3D%22ml%22%3EChat%20%3Ca%20href%3D%22/Dashboard/Chat%22%3EAbrir%20%E2%86%92%3C/a%3E%3C/div%3E%3Cdiv%20id%3D%22mch%22%3E%3Cdiv%20class%3D%22msk%22%3E%3C/div%3E%3C/div%3E%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mg%20mw%22%20style%3D%22margin-bottom%3A14px%22%3E%3Cdiv%20class%3D%22mc%22%3E%3Cdiv%20class%3D%22ml%22%3EPagamentos%20%3Ca%20href%3D%22/Dashboard/Accounting%22%3EFinanceiro%20%E2%86%92%3C/a%3E%3C/div%3E%3Cdiv%20id%3D%22mpa%22%3E%3Cdiv%20class%3D%22msk%22%3E%3C/div%3E%3C/div%3E%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mg%20mhalf%22%20style%3D%22margin-bottom%3A14px%22%3E%3Cdiv%20class%3D%22mc%22%3E%3Cdiv%20class%3D%22ml%22%3EHoje%3C/div%3E%3Cdiv%20id%3D%22mdy%22%3E%3Cdiv%20class%3D%22msk%22%3E%3C/div%3E%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mc%22%3E%3Cdiv%20class%3D%22ml%22%3EAtividades%20em%20tempo%20real%3C/div%3E%3Cdiv%20class%3D%22mfeed%22%20id%3D%22mfe%22%3E%3Cdiv%20class%3D%22msk%22%3E%3C/div%3E%3C/div%3E%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mc%22%3E%3Cdiv%20class%3D%22ml%22%3EAcesso%20r%C3%A1pido%3C/div%3E%3Cdiv%20class%3D%22mlinks%22%3E%3Ca%20class%3D%22mlink%22%20href%3D%22/Dashboard%22%3E%F0%9F%93%8A%20Dashboard%3C/a%3E%3Ca%20class%3D%22mlink%22%20href%3D%22/Dashboard/Schedule%22%20id%3D%22msl2%22%3E%F0%9F%93%85%20Agenda%3C/a%3E%3Ca%20class%3D%22mlink%22%20href%3D%22/Dashboard/Client%22%3E%F0%9F%91%A5%20Clientes%3C/a%3E%3Ca%20class%3D%22mlink%22%20href%3D%22/Dashboard/Accounting%22%3E%F0%9F%92%B0%20Financeiro%3C/a%3E%3Ca%20class%3D%22mlink%22%20href%3D%22/Dashboard/Analytics%22%3E%F0%9F%93%88%20Analytics%3C/a%3E%3Ca%20class%3D%22mlink%22%20href%3D%22/Dashboard/Job/Reviews%22%3E%E2%AD%90%20Avalia%C3%A7%C3%B5es%3C/a%3E%3Ca%20class%3D%22mlink%22%20href%3D%22/Dashboard/Chat%22%3E%F0%9F%92%AC%20Chat%3C/a%3E%3C/div%3E%3C/div%3E%3C/div%3E%27%3B%20document.body.appendChild%28ov%29%3B%20var%20open%3Dfalse%2Cfetched%3Dfalse%2Ctimer%2Cacts%3D%5B%5D%3B%20function%20gi%28id%29%7Breturn%20document.getElementById%28id%29%3B%7D%20function%20fmt%28v%29%7Bif%28v%3D%3Dnull%7C%7CisNaN%28v%29%29return%27%E2%80%94%27%3Breturn%27%24%27%2BNumber%28v%29.toLocaleString%28%27en-US%27%2C%7BminimumFractionDigits%3A0%7D%29%3B%7D%20function%20n%28v%29%7Breturn%28v%3D%3Dnull%7C%7Cv%3D%3D%3D%27%27%29%3F%27%E2%80%94%27%3Av%3B%7D%20//%20Renderers%20using%20real%20API%20field%20names%20function%20rC%28d%29%7B%20var%20s%3Dd.Summary%7C%7C%7B%7D%3B%20return%20%27%3Cdiv%20class%3D%22mbig%22%3E%27%2Bn%28s.Total%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22msub%22%3Eclientes%20totais%3C/div%3E%3Cdiv%20class%3D%22mrow%22%3E%3Cdiv%3E%3Cdiv%20class%3D%22mv%22%3E%27%2Bn%28s.Recurring%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mlb%22%3Erecorrentes%3C/div%3E%3C/div%3E%3Cdiv%3E%3Cdiv%20class%3D%22mv%22%3E%27%2Bn%28s.OneTime%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mlb%22%3Eavulsos%3C/div%3E%3C/div%3E%3Cdiv%3E%3Cdiv%20class%3D%22mv%22%3E%27%2Bn%28s.NoJob%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mlb%22%3Esem%20job%3C/div%3E%3C/div%3E%3C/div%3E%27%3B%20%7D%20function%20rJ%28d%29%7B%20var%20s%3Dd.Summary%7C%7C%7B%7D%3B%20return%20%27%3Cdiv%20class%3D%22mbig%22%3E%27%2Bn%28s.Total%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22msub%22%3Eesta%20semana%3C/div%3E%3Cdiv%20class%3D%22mrow%22%3E%3Cdiv%3E%3Cdiv%20class%3D%22mv%22%3E%27%2Bn%28s.Recurring%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mlb%22%3Erecorrentes%3C/div%3E%3C/div%3E%3Cdiv%3E%3Cdiv%20class%3D%22mv%22%3E%27%2Bn%28s.OneTime%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mlb%22%3Eavulsas%3C/div%3E%3C/div%3E%3C/div%3E%27%3B%20%7D%20function%20rR%28d%29%7B%20var%20s%3Dd.Summary%7C%7C%7B%7D%3B%20var%20sc%3Ds.Average%21%3Dnull%3FMath.round%28s.Average%2A100%29/100%3A%27%E2%80%94%27%3B%20var%20cnt%3Ds.Count%7C%7C0%3B%20var%20stars%3Dsc%21%3D%3D%27%E2%80%94%27%3F%27%E2%98%85%27.repeat%28Math.round%28sc%29%29%2B%27%E2%98%86%27.repeat%285-Math.round%28sc%29%29%3A%27%27%3B%20return%20%27%3Cdiv%20class%3D%22mscr%22%3E%27%2Bsc%2B%27%3C/div%3E%3Cdiv%20class%3D%22mstars%22%3E%27%2Bstars%2B%27%3C/div%3E%3Cdiv%20class%3D%22msub%22%20style%3D%22margin-top%3A6px%22%3E%27%2Bcnt%2B%27%20avalia%C3%A7%C3%B5es%3C/div%3E%27%3B%20%7D%20function%20rP%28d%29%7B%20var%20s%3Dd.Summary%7C%7C%7B%7D%3B%20var%20total%3Ds.Total%7C%7C0%3B%20var%20lt7%3Ds.LessThan7Days%7C%7C0%3B%20var%20mt7%3Ds.MoreThan7Days%7C%7C0%3B%20var%20overdue%3Dtotal-lt7-mt7%3B%20return%20%27%3Cdiv%20class%3D%22mbucs%22%3E%3Cdiv%20class%3D%22mbuc%20ov%22%3E%3Cdiv%20class%3D%22mbamt%22%3E%27%2Bfmt%28overdue%3E0%3Foverdue%3A0%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mblbl%22%3EVencidos%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mbuc%20sn%22%3E%3Cdiv%20class%3D%22mbamt%22%3E%27%2Bfmt%28lt7%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mblbl%22%3EVencem%200%E2%80%937%20dias%3C/div%3E%3C/div%3E%3Cdiv%20class%3D%22mbuc%20lt%22%3E%3Cdiv%20class%3D%22mbamt%22%3E%27%2Bfmt%28mt7%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mblbl%22%3EVencem%20%2B7%20dias%3C/div%3E%3C/div%3E%3C/div%3E%27%3B%20%7D%20function%20rCh%28d%29%7B%20var%20s%3Dd.Summary%7C%7Cd%7C%7C%7B%7D%3B%20var%20u%3Ds.Unread%7C%7Cs.UnreadCount%7C%7Cs.Count%7C%7C0%3B%20return%20u%3E0%3F%27%3Cdiv%20class%3D%22mbig%22%20style%3D%22color%3A%23ff5f5f%22%3E%27%2Bu%2B%27%3C/div%3E%3Cdiv%20class%3D%22msub%22%3En%C3%A3o%20lidas%3C/div%3E%27%3A%27%3Cdiv%20class%3D%22mbig%22%3E0%3C/div%3E%3Cdiv%20class%3D%22msub%22%3Esem%20mensagens%3C/div%3E%27%3B%20%7D%20function%20rD%28d%29%7B%20//%20This%20endpoint%20returns%20HTML%20%E2%80%94%20parse%20it%20if%28typeof%20d%3D%3D%3D%27string%27%7C%7Cd%20instanceof%20Document%29%7B%20return%20%27%3Cdiv%20class%3D%22msub%22%3EAbra%20a%20%3Ca%20href%3D%22/Dashboard/Schedule%22%20style%3D%22color%3A%235be49b%22%3EAgenda%3C/a%3E%20para%20ver%20detalhes%20de%20hoje%3C/div%3E%27%3B%20%7D%20var%20jobs%3DArray.isArray%28d%29%3Fd%3A%28d%26%26%28d.Jobs%7C%7Cd.Summary%7C%7C%5B%5D%29%29%3B%20if%28%21Array.isArray%28jobs%29%7C%7C%21jobs.length%29return%27%3Cdiv%20class%3D%22msub%22%3ENenhuma%20limpeza%20hoje%3C/div%3E%27%3B%20return%27%3Cdiv%20class%3D%22mdjg%22%3E%27%2Bjobs.slice%280%2C12%29.map%28function%28j%29%7Bvar%20rec%3Dj.IsRecurring%7C%7Cj.isRecurring%7C%7Cj.Recurring%3Breturn%27%3Cdiv%20class%3D%22mjc%22%3E%3Cdiv%20class%3D%22mjt%22%3E%27%2B%28j.StartTime%7C%7Cj.startTime%7C%7Cj.Time%7C%7C%27%E2%80%94%27%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mjn%22%3E%27%2B%28j.ClientName%7C%7Cj.clientName%7C%7Cj.Client%7C%7C%27%E2%80%94%27%29%2B%27%3C/div%3E%3Cdiv%20class%3D%22mjtg%22%3E%3Cspan%20class%3D%22mtag%20%27%2B%28rec%3F%27rec%27%3A%27onc%27%29%2B%27%22%3E%27%2B%28rec%3F%27Recorrente%27%3A%27Avulsa%27%29%2B%27%3C/span%3E%3C/div%3E%3C/div%3E%27%3B%7D%29.join%28%27%27%29%2B%27%3C/div%3E%27%3B%20%7D%20var%20ACT%3D%7B1%3A%7Bicon%3A%27%F0%9F%93%8B%27%2Ccls%3A%27other%27%2Clbl%3A%27Agendado%27%7D%2C2%3A%7Bicon%3A%27%F0%9F%9A%97%27%2Ccls%3A%27route%27%2Clbl%3A%27A%20caminho%27%7D%2C3%3A%7Bicon%3A%27%F0%9F%A7%B9%27%2Ccls%3A%27start%27%2Clbl%3A%27Iniciado%27%7D%2C4%3A%7Bicon%3A%27%E2%9C%85%27%2Ccls%3A%27done%27%2Clbl%3A%27Conclu%C3%ADdo%27%7D%2C5%3A%7Bicon%3A%27%F0%9F%92%AC%27%2Ccls%3A%27other%27%2Clbl%3A%27Chat%27%7D%2C6%3A%7Bicon%3A%27%E2%9C%94%EF%B8%8F%27%2Ccls%3A%27done%27%2Clbl%3A%27Finalizado%27%7D%7D%3B%20function%20rA%28item%29%7B%20var%20t%3DACT%5Bitem.Type%7C%7Citem.type%7C%7Citem.ActivityType%5D%7C%7C%7Bicon%3A%27%E2%80%A2%27%2Ccls%3A%27other%27%2Clbl%3A%27Atividade%27%7D%3B%20var%20name%3Ditem.ClientName%7C%7Citem.clientName%7C%7Citem.Client%7C%7Citem.Name%7C%7Citem.name%7C%7C%27%27%3B%20var%20team%3Ditem.TeamName%7C%7Citem.teamName%7C%7Citem.Team%7C%7Citem.Employee%7C%7C%27%27%3B%20var%20raw%3Ditem.Date%7C%7Citem.date%7C%7Citem.CreatedAt%7C%7Citem.ActivityDate%7C%7C%27%27%3B%20var%20time%3Draw%3Fnew%20Date%28raw%29.toLocaleTimeString%28%27pt-BR%27%2C%7Bhour%3A%272-digit%27%2Cminute%3A%272-digit%27%7D%29%3A%27%27%3B%20var%20desc%3Ditem.Description%7C%7Citem.description%7C%7Citem.Message%7C%7C%27%27%3B%20var%20display%3Dname%7C%7C%28desc.length%3E60%3Fdesc.slice%280%2C60%29%2B%27%E2%80%A6%27%3Adesc%29%7C%7C%27%E2%80%94%27%3B%20return%27%3Cdiv%20class%3D%22mact%22%3E%3Cdiv%20class%3D%22maico%20%27%2Bt.cls%2B%27%22%3E%27%2Bt.icon%2B%27%3C/div%3E%3Cdiv%3E%3Cdiv%20class%3D%22mamain%22%3E%3Cstrong%3E%27%2Bt.lbl%2B%27%3C/strong%3E%27%2B%28display%3F%27%20%E2%80%94%20%27%2Bdisplay%3A%27%27%29%2B%28team%3F%27%20%3Cspan%20style%3D%22color%3A%238b92a8%22%3E%C2%B7%20%27%2Bteam%2B%27%3C/span%3E%27%3A%27%27%29%2B%27%3C/div%3E%27%2B%28time%3F%27%3Cdiv%20class%3D%22matime%22%3E%27%2Btime%2B%27%3C/div%3E%27%3A%27%27%29%2B%27%3C/div%3E%3C/div%3E%27%3B%20%7D%20function%20renderFeed%28%29%7Bvar%20el%3Dgi%28%27mfe%27%29%3Bif%28%21el%29return%3Bel.innerHTML%3Dacts.length%3Facts.slice%280%2C30%29.map%28rA%29.join%28%27%27%29%3A%27%3Cdiv%20class%3D%22msub%22%3ESem%20atividades%3C/div%3E%27%3B%7D%20function%20fetchAll%28%29%7B%20fetched%3Dtrue%3B%20gi%28%27mpp%27%29.className%3D%27mp%20off%27%3B%20var%20today%3Dnew%20Date%28%29%3Bvar%20ymd%3Dtoday.getFullYear%28%29%2B%27/%27%2B%28today.getMonth%28%29%2B1%29%2B%27/%27%2Btoday.getDate%28%29%3B%20var%20sl%3Dgi%28%27msl%27%29%3Bif%28sl%29sl.href%3D%27/Dashboard/Schedule/Day/%27%2Bymd%3B%20var%20sl2%3Dgi%28%27msl2%27%29%3Bif%28sl2%29sl2.href%3D%27/Dashboard/Schedule/Day/%27%2Bymd%3B%20var%20calls%3D%5B%20%5B%27/Dashboard/Company/GetClientSummary%27%2C%27mcl%27%2CrC%5D%2C%20%5B%27/Dashboard/Company/GetJobSummary%27%2C%27mjo%27%2CrJ%5D%2C%20%5B%27/Dashboard/Company/GetReviewSummary%27%2C%27mrv%27%2CrR%5D%2C%20%5B%27/Dashboard/Company/GetPaymentSummary%27%2C%27mpa%27%2CrP%5D%2C%20%5B%27/Dashboard/Company/GetChatSummary%27%2C%27mch%27%2CrCh%5D%2C%20%5D%3B%20Promise.all%28calls.map%28function%28c%29%7B%20return%20fetch%28c%5B0%5D%2C%7Bcredentials%3A%27include%27%7D%29.then%28function%28r%29%7Bif%28%21r.ok%29throw%20new%20Error%28r.status%29%3Breturn%20r.json%28%29%3B%7D%29.then%28function%28d%29%7Bvar%20el%3Dgi%28c%5B1%5D%29%3Bif%28el%29el.innerHTML%3Dc%5B2%5D%28d%29%3B%7D%29.catch%28function%28e%29%7Bvar%20el%3Dgi%28c%5B1%5D%29%3Bif%28el%29el.innerHTML%3D%27%3Cdiv%20class%3D%22merr%22%3EErro%3A%20%27%2Be.message%2B%27%3C/div%3E%27%3B%7D%29%3B%20%7D%29%29%3B%20//%20Day%20summary%20returns%20HTML%20partial%20%E2%80%94%20just%20link%20to%20schedule%20var%20dEl%3Dgi%28%27mdy%27%29%3B%20if%28dEl%29dEl.innerHTML%3D%27%3Cdiv%20class%3D%22msub%22%20style%3D%22padding%3A8px%200%22%3EVer%20agenda%20completa%3A%20%3Ca%20href%3D%22/Dashboard/Schedule/Day/%27%2Bymd%2B%27%22%20style%3D%22color%3A%235be49b%22%3EAgenda%20de%20hoje%20%E2%86%92%3C/a%3E%3C/div%3E%27%3B%20//%20Activities%20fetch%28%27/Dashboard/Home/GetActivities%3Ftypes%3D2%26types%3D3%26types%3D6%26types%3D1%26types%3D5%26page%3D0%27%2C%7Bcredentials%3A%27include%27%7D%29%20.then%28function%28r%29%7Bif%28%21r.ok%29throw%20new%20Error%28r.status%29%3Breturn%20r.json%28%29%3B%7D%29%20.then%28function%28d%29%7B%20//%20Log%20full%20structure%20to%20console%20for%20debugging%20console.log%28%27%5BMaidPad%20Panel%5D%20Activities%20raw%3A%27%2C%20d%29%3B%20acts%3DArray.isArray%28d%29%3Fd%3A%28d%26%26%28d.Activities%7C%7Cd.activities%7C%7Cd.Items%7C%7Cd.items%7C%7Cd.Data%7C%7Cd.data%7C%7C%5B%5D%29%29%3B%20if%28%21Array.isArray%28acts%29%29acts%3D%5B%5D%3B%20renderFeed%28%29%3B%20%7D%29%20.catch%28function%28e%29%7Bvar%20el%3Dgi%28%27mfe%27%29%3Bif%28el%29el.innerHTML%3D%27%3Cdiv%20class%3D%22merr%22%3EErro%3A%20%27%2Be.message%2B%27%3C/div%3E%27%3B%7D%29%3B%20gi%28%27mpp%27%29.className%3D%27mp%27%3B%20gi%28%27mpt%27%29.textContent%3D%27Atualizado%20%27%2Bnew%20Date%28%29.toLocaleTimeString%28%27pt-BR%27%2C%7Bhour%3A%272-digit%27%2Cminute%3A%272-digit%27%2Csecond%3A%272-digit%27%7D%29%3B%20clearTimeout%28timer%29%3Btimer%3DsetTimeout%28fetchAll%2C30000%29%3B%20%7D%20btn.addEventListener%28%27click%27%2Cfunction%28%29%7Bopen%3D%21open%3Bov.classList.toggle%28%27open%27%2Copen%29%3Bif%28open%26%26%21fetched%29fetchAll%28%29%3B%7D%29%3B%20ov.addEventListener%28%27click%27%2Cfunction%28e%29%7Bif%28e.target%3D%3D%3Dov%29%7Bopen%3Dfalse%3Bov.classList.remove%28%27open%27%29%3B%7D%7D%29%3B%20gi%28%27mp-x%27%29.addEventListener%28%27click%27%2Cfunction%28%29%7Bopen%3Dfalse%3Bov.classList.remove%28%27open%27%29%3B%7D%29%3B%20gi%28%27mpr%27%29.addEventListener%28%27click%27%2CfetchAll%29%3B%20%7D%29%28%29%3B
+// ==UserScript==
+// @name         MaidPad Panel
+// @namespace    maidpad-panel
+// @version      2.0
+// @match        https://www.maidpad.com/*
+// @grant        none
+// ==/UserScript==
+
+(function () {
+  'use strict';
+  if (document.getElementById('mp-toggle')) return;
+
+  const style = document.createElement('style');
+  style.textContent = `
+#mp-toggle{position:fixed;bottom:24px;right:24px;z-index:99998;width:48px;height:48px;border-radius:50%;background:#5be49b;border:none;cursor:pointer;font-size:22px;box-shadow:0 4px 16px rgba(91,228,155,0.4);display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+#mp-toggle:hover{transform:scale(1.1);}
+#mp-root{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+#mp-root.open{display:flex;}
+#mp-panel{background:#0f1117;border:1px solid #252a38;border-radius:16px;width:100%;max-width:1200px;padding:28px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;color:#e8eaf0;position:relative;}
+#mp-x{position:absolute;top:16px;right:16px;background:none;border:1px solid #252a38;color:#8b92a8;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;}
+#mp-x:hover{border-color:#5be49b;color:#5be49b;}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #252a38;}
+.mb{display:flex;align-items:center;gap:10px;}
+.mbi{width:32px;height:32px;background:rgba(91,228,155,0.12);border:1px solid #5be49b;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.mbn{font-size:15px;font-weight:600;}
+.mbs{font-size:12px;color:#8b92a8;}
+.mst{display:flex;align-items:center;gap:10px;}
+.mpp{width:8px;height:8px;border-radius:50%;background:#5be49b;animation:mppa 2s infinite;}
+.mpp.off{background:#5a6278;animation:none;}
+@keyframes mppa{0%{box-shadow:0 0 0 0 rgba(91,228,155,0.4)}70%{box-shadow:0 0 0 6px rgba(91,228,155,0)}100%{box-shadow:0 0 0 0 rgba(91,228,155,0)}}
+.mt{font-size:11px;color:#8b92a8;font-family:monospace;}
+.mbtn{background:none;border:1px solid #252a38;color:#8b92a8;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;}
+.mbtn:hover{border-color:#5be49b;color:#5be49b;}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:14px;}
+.mw{grid-template-columns:1fr;}
+.mhalf{grid-template-columns:1fr 1fr;}
+.mc{background:#181c27;border:1px solid #252a38;border-radius:12px;padding:18px;}
+.ml{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#8b92a8;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.ml a{color:#8b92a8;text-decoration:none;font-size:11px;}
+.ml a:hover{color:#5be49b;}
+.mbig{font-family:monospace;font-size:40px;font-weight:500;line-height:1;margin-bottom:4px;}
+.msub{font-size:12px;color:#8b92a8;}
+.mrow{display:flex;gap:20px;flex-wrap:wrap;margin-top:12px;}
+.mv{font-family:monospace;font-size:20px;font-weight:500;}
+.mlb{font-size:11px;color:#8b92a8;}
+.mbucs{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;}
+.mbuc{flex:1;min-width:80px;padding:12px;border-radius:8px;border:1px solid #252a38;}
+.mbuc.ov{border-color:rgba(255,95,95,.3);background:rgba(255,95,95,.07);}
+.mbuc.sn{border-color:rgba(245,166,35,.3);background:rgba(245,166,35,.07);}
+.mbuc.lt{border-color:rgba(91,228,155,.2);background:rgba(91,228,155,.05);}
+.mbamt{font-family:monospace;font-size:22px;font-weight:500;}
+.mbuc.ov .mbamt{color:#ff5f5f;}
+.mbuc.sn .mbamt{color:#f5a623;}
+.mbuc.lt .mbamt{color:#5be49b;}
+.mblbl{font-size:11px;color:#8b92a8;margin-top:2px;}
+.mfeed{display:flex;flex-direction:column;max-height:320px;overflow-y:auto;}
+.mact{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #252a38;}
+.mact:last-child{border-bottom:none;}
+.maico{width:28px;height:28px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.maico.start{background:rgba(91,228,155,.12);}
+.maico.route{background:rgba(91,180,228,.12);}
+.maico.done{background:rgba(91,228,155,.2);}
+.maico.other{background:#181c27;border:1px solid #252a38;}
+.mamain{font-size:13px;}
+.matime{font-size:11px;color:#8b92a8;font-family:monospace;}
+.mscr{font-family:monospace;font-size:48px;font-weight:500;line-height:1;margin-bottom:4px;}
+.mstars{color:#f5a623;font-size:18px;letter-spacing:2px;}
+.mdjg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:4px;}
+.mjc{background:#0f1117;border:1px solid #252a38;border-radius:8px;padding:10px;}
+.mjtime{font-family:monospace;font-size:11px;color:#8b92a8;}
+.mjn{font-size:13px;font-weight:500;margin:2px 0;}
+.mjtg{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.mtag{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;border:1px solid #252a38;color:#8b92a8;}
+.mtag.rec{border-color:rgba(91,228,155,.3);color:#5be49b;}
+.mtag.onc{border-color:rgba(245,166,35,.3);color:#f5a623;}
+.mlinks{display:flex;flex-wrap:wrap;gap:8px;}
+.mlink{display:flex;align-items:center;gap:6px;background:#0f1117;border:1px solid #252a38;color:#e8eaf0;text-decoration:none;padding:7px 13px;border-radius:8px;font-size:13px;}
+.mlink:hover{border-color:#5be49b;color:#5be49b;}
+.merr{color:#ff5f5f;font-size:12px;font-family:monospace;}
+.msk{background:linear-gradient(90deg,#252a38 25%,#181c27 50%,#252a38 75%);background-size:200% 100%;animation:msh 1.5s infinite;border-radius:4px;height:36px;}
+@keyframes msh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media(max-width:700px){.mhalf{grid-template-columns:1fr}}
+  `;
+  document.head.appendChild(style);
+
+  const btn = document.createElement('button');
+  btn.id = 'mp-toggle';
+  btn.textContent = '🧹';
+  document.body.appendChild(btn);
+
+  const ov = document.createElement('div');
+  ov.id = 'mp-root';
+  ov.innerHTML = `<div id="mp-panel">
+  <button id="mp-x">✕</button>
+  <div class="mh">
+    <div class="mb">
+      <div class="mbi">🧹</div>
+      <div><div class="mbn">Paula's Cleaning Squad</div><div class="mbs">MaidPad Dashboard</div></div>
+    </div>
+    <div class="mst">
+      <div class="mpp off" id="mpp"></div>
+      <span class="mt" id="mpt">—</span>
+      <button class="mbtn" id="mpr">↻ Atualizar</button>
+    </div>
+  </div>
+  <div class="mg">
+    <div class="mc"><div class="ml">Clientes <a href="/Dashboard/Client">Ver →</a></div><div id="mcl"><div class="msk"></div></div></div>
+    <div class="mc"><div class="ml">Limpezas esta semana <a href="/Dashboard/Schedule" id="msl">Agenda →</a></div><div id="mjo"><div class="msk"></div></div></div>
+    <div class="mc"><div class="ml">Avaliações (30 dias) <a href="/Dashboard/Job/Reviews">Ver →</a></div><div id="mrv"><div class="msk"></div></div></div>
+    <div class="mc"><div class="ml">Chat <a href="/Dashboard/Chat">Abrir →</a></div><div id="mch"><div class="msk"></div></div></div>
+  </div>
+  <div class="mg mw" style="margin-bottom:14px">
+    <div class="mc"><div class="ml">Pagamentos <a href="/Dashboard/Accounting">Financeiro →</a></div><div id="mpa"><div class="msk"></div></div></div>
+  </div>
+  <div class="mg mhalf" style="margin-bottom:14px">
+    <div class="mc"><div class="ml">Hoje</div><div id="mdy"><div class="msk"></div></div></div>
+    <div class="mc"><div class="ml">Atividades em tempo real</div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
+  </div>
+  <div class="mc">
+    <div class="ml">Acesso rápido</div>
+    <div class="mlinks">
+      <a class="mlink" href="/Dashboard">📊 Dashboard</a>
+      <a class="mlink" href="/Dashboard/Schedule" id="msl2">📅 Agenda</a>
+      <a class="mlink" href="/Dashboard/Client">👥 Clientes</a>
+      <a class="mlink" href="/Dashboard/Accounting">💰 Financeiro</a>
+      <a class="mlink" href="/Dashboard/Analytics">📈 Analytics</a>
+      <a class="mlink" href="/Dashboard/Job/Reviews">⭐ Avaliações</a>
+      <a class="mlink" href="/Dashboard/Chat">💬 Chat</a>
+    </div>
+  </div>
+</div>`;
+  document.body.appendChild(ov);
+
+  let open = false, fetched = false, timer, acts = [];
+  const gi = id => document.getElementById(id);
+  const fmt = v => (v == null || isNaN(v)) ? '—' : '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 0 });
+  const n = v => (v == null || v === '') ? '—' : v;
+
+  function rC(d) {
+    const s = d.Summary || {};
+    return `<div class="mbig">${n(s.Total)}</div><div class="msub">clientes totais</div>
+    <div class="mrow">
+      <div><div class="mv">${n(s.Recurring)}</div><div class="mlb">recorrentes</div></div>
+      <div><div class="mv">${n(s.OneTime)}</div><div class="mlb">avulsos</div></div>
+      <div><div class="mv">${n(s.NoJob)}</div><div class="mlb">sem job</div></div>
+    </div>`;
+  }
+
+  function rJ(d) {
+    const s = d.Summary || {};
+    return `<div class="mbig">${n(s.Total)}</div><div class="msub">esta semana</div>
+    <div class="mrow">
+      <div><div class="mv">${n(s.Recurring)}</div><div class="mlb">recorrentes</div></div>
+      <div><div class="mv">${n(s.OneTime)}</div><div class="mlb">avulsas</div></div>
+    </div>`;
+  }
+
+  function rR(d) {
+    const s = d.Summary || {};
+    const sc = s.Average != null ? Math.round(s.Average * 100) / 100 : '—';
+    const cnt = s.Count || 0;
+    const stars = sc !== '—' ? '★'.repeat(Math.round(sc)) + '☆'.repeat(5 - Math.round(sc)) : '';
+    return `<div class="mscr">${sc}</div><div class="mstars">${stars}</div>
+    <div class="msub" style="margin-top:6px">${cnt} avaliações</div>`;
+  }
+
+  function rP(d) {
+    const s = d.Summary || {};
+    const total = s.Total || 0;
+    const lt7 = s.LessThan7Days || 0;
+    const mt7 = s.MoreThan7Days || 0;
+    const overdue = Math.max(0, total - lt7 - mt7);
+    return `<div class="mbucs">
+      <div class="mbuc ov"><div class="mbamt">${fmt(overdue)}</div><div class="mblbl">Vencidos</div></div>
+      <div class="mbuc sn"><div class="mbamt">${fmt(lt7)}</div><div class="mblbl">Vencem 0–7 dias</div></div>
+      <div class="mbuc lt"><div class="mbamt">${fmt(mt7)}</div><div class="mblbl">Vencem +7 dias</div></div>
+    </div>`;
+  }
+
+  function rCh(d) {
+    const s = d.Summary || d || {};
+    const u = s.Unread || s.UnreadCount || s.Count || 0;
+    return u > 0
+      ? `<div class="mbig" style="color:#ff5f5f">${u}</div><div class="msub">não lidas</div>`
+      : `<div class="mbig">0</div><div class="msub">sem mensagens</div>`;
+  }
+
+  const ACT = {
+    1: { icon: '📋', cls: 'other', lbl: 'Agendado' },
+    2: { icon: '🚗', cls: 'route', lbl: 'A caminho' },
+    3: { icon: '🧹', cls: 'start', lbl: 'Iniciado'  },
+    4: { icon: '✅', cls: 'done',  lbl: 'Concluído' },
+    5: { icon: '💬', cls: 'other', lbl: 'Chat'      },
+    6: { icon: '✔️', cls: 'done',  lbl: 'Finalizado'},
+  };
+
+  function rA(item) {
+    const t = ACT[item.Type || item.type || item.ActivityType] || { icon: '•', cls: 'other', lbl: 'Atividade' };
+    const name = item.ClientName || item.clientName || item.Client || item.Name || item.name || '';
+    const team = item.TeamName || item.teamName || item.Team || item.Employee || '';
+    const raw  = item.Date || item.date || item.CreatedAt || item.ActivityDate || '';
+    const time = raw ? new Date(raw).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+    const desc = item.Description || item.description || item.Message || '';
+    const display = name || (desc.length > 60 ? desc.slice(0, 60) + '…' : desc) || '—';
+    return `<div class="mact">
+      <div class="maico ${t.cls}">${t.icon}</div>
+      <div>
+        <div class="mamain"><strong>${t.lbl}</strong>${display ? ' — ' + display : ''}${team ? ` <span style="color:#8b92a8">· ${team}</span>` : ''}</div>
+        ${time ? `<div class="matime">${time}</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  function renderFeed() {
+    const el = gi('mfe');
+    if (!el) return;
+    el.innerHTML = acts.length ? acts.slice(0, 30).map(rA).join('') : '<div class="msub">Sem atividades</div>';
+  }
+
+  async function fetchAll() {
+    fetched = true;
+    gi('mpp').className = 'mpp off';
+    const today = new Date();
+    const ymd = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
+    const sl = gi('msl'); if (sl) sl.href = `/Dashboard/Schedule/Day/${ymd}`;
+    const sl2 = gi('msl2'); if (sl2) sl2.href = `/Dashboard/Schedule/Day/${ymd}`;
+
+    const calls = [
+      ['/Dashboard/Company/GetClientSummary',  'mcl', rC],
+      ['/Dashboard/Company/GetJobSummary',     'mjo', rJ],
+      ['/Dashboard/Company/GetReviewSummary',  'mrv', rR],
+      ['/Dashboard/Company/GetPaymentSummary', 'mpa', rP],
+      ['/Dashboard/Company/GetChatSummary',    'mch', rCh],
+    ];
+
+    await Promise.all(calls.map(async ([path, id, render]) => {
+      try {
+        const r = await fetch(path, { credentials: 'include' });
+        if (!r.ok) throw new Error(r.status);
+        const d = await r.json();
+        const el = gi(id); if (el) el.innerHTML = render(d);
+      } catch (e) {
+        const el = gi(id); if (el) el.innerHTML = `<div class="merr">Erro: ${e.message}</div>`;
+      }
+    }));
+
+    // Day summary returns HTML — just link
+    const dEl = gi('mdy');
+    if (dEl) dEl.innerHTML = `<div class="msub" style="padding:8px 0">
+      <a href="/Dashboard/Schedule/Day/${ymd}" style="color:#5be49b">📅 Ver agenda de hoje →</a>
+    </div>`;
+
+    // Activities
+    try {
+      const r = await fetch('/Dashboard/Home/GetActivities?types=2&types=3&types=6&types=1&types=5&page=0', { credentials: 'include' });
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json();
+      console.log('[MaidPad Panel] Activities:', JSON.stringify(d).slice(0, 500));
+      acts = Array.isArray(d) ? d : (d?.Activities || d?.activities || d?.Items || d?.items || d?.Data || d?.data || []);
+      if (!Array.isArray(acts)) acts = [];
+      renderFeed();
+    } catch (e) {
+      const el = gi('mfe'); if (el) el.innerHTML = `<div class="merr">Erro: ${e.message}</div>`;
+    }
+
+    gi('mpp').className = 'mpp';
+    gi('mpt').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    clearTimeout(timer);
+    timer = setTimeout(fetchAll, 30000);
+  }
+
+  btn.addEventListener('click', () => {
+    open = !open;
+    ov.classList.toggle('open', open);
+    if (open && !fetched) fetchAll();
+  });
+  ov.addEventListener('click', e => { if (e.target === ov) { open = false; ov.classList.remove('open'); } });
+  gi('mp-x').addEventListener('click', () => { open = false; ov.classList.remove('open'); });
+  gi('mpr').addEventListener('click', fetchAll);
+
+  // Hook into existing SignalR
+  setTimeout(() => {
+    try {
+      const $ = window.jQuery;
+      if (!$ || !$.connection) return;
+      const hub = $.connection.schedulehub;
+      if (!hub) return;
+      const orig = hub.client.jobUpdated;
+      hub.client.jobUpdated = function (data) {
+        if (orig) orig(data);
+        if (data) { acts.unshift(data); if (acts.length > 50) acts.pop(); }
+        if (open) renderFeed();
+      };
+    } catch (e) {}
+  }, 3000);
+})();
