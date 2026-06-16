@@ -304,7 +304,7 @@
 // ─── Clientes sem limpeza recente ────────────────────────────────────────────
 async function fetchOverdueClients() {
   try {
-    const r = await fetch('/Dashboard/Client/SearchClients?search=&stages=2&pageSize=200', { credentials: 'include' });
+    const r = await fetch('/Dashboard/Client/SearchClients?search=&stages=51&pageSize=200', { credentials: 'include' });
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
     const clients = d.Clients || [];
@@ -313,7 +313,7 @@ async function fetchOverdueClients() {
     const withDays = clients
       .filter(c => c.LastJobDate && c.Frequency)
       .map(c => {
-        const last = new Date(c.LastJobDate);
+        const parts = c.LastJobDate.split('/'); const last = new Date(parts[2], parts[0]-1, parts[1]);
         const daysSince = Math.floor((today - last) / 86400000);
         const freqDays = freqToDays(c.Frequency);
         const overdue = daysSince - freqDays;
@@ -332,7 +332,7 @@ async function fetchOverdueClients() {
     }
 
     el.innerHTML = withDays.map(c => {
-      const last = new Date(c.LastJobDate).toLocaleDateString('pt-BR');
+      const dp = c.LastJobDate.split('/'); const last = new Date(dp[2],dp[0]-1,dp[1]).toLocaleDateString('pt-BR');
       const color = c.overdue > 14 ? '#ff5f5f' : c.overdue > 7 ? '#f5a623' : '#8b92a8';
       return `<div class="mact">
         <div style="width:42px;text-align:center;flex-shrink:0">
@@ -353,16 +353,17 @@ async function fetchOverdueClients() {
 
 function freqToDays(freq) {
   const map = {
-    'Weekly': 7, 'BiWeekly': 14, 'EveryThreeWeeks': 21,
-    'Monthly': 30, 'EveryTwoMonths': 60, 'EveryThreeMonths': 90,
+    'Weekly':7,'1':7, 'BiWeekly':14,'2':14, 'EveryThreeWeeks':21,'3':21,
+    'Monthly':30,'4':30, 'EveryTwoMonths':60,'5':60, 'EveryThreeMonths':90,'6':90,
   };
-  return map[freq] || 30;
+  return map[String(freq)] || 30;
 }
 
 function freqLabel(freq) {
   const map = {
-    'Weekly': 'Semanal', 'BiWeekly': 'Quinzenal', 'EveryThreeWeeks': '3 semanas',
-    'Monthly': 'Mensal', 'EveryTwoMonths': '2 meses', 'EveryThreeMonths': '3 meses',
+    'Weekly':'Semanal','1':'Semanal', 'BiWeekly':'Quinzenal','2':'Quinzenal',
+    'EveryThreeWeeks':'3 semanas','3':'3 semanas', 'Monthly':'Mensal','4':'Mensal',
+    'EveryTwoMonths':'2 meses','5':'2 meses', 'EveryThreeMonths':'3 meses','6':'3 meses',
   };
-  return map[freq] || freq;
+  return map[String(freq)] || 'Freq '+freq;
 }
