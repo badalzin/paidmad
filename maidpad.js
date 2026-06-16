@@ -195,17 +195,16 @@
   };
 
   function rA(item) {
-    const t = ACT[item.Type || item.type || item.ActivityType] || { icon: '•', cls: 'other', lbl: 'Atividade' };
-    const name = item.ClientName || item.clientName || item.Client || item.Name || item.name || '';
-    const team = item.TeamName || item.teamName || item.Team || item.Employee || '';
-    const raw  = item.Date || item.date || item.CreatedAt || item.ActivityDate || '';
-    const time = raw ? new Date(raw).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
-    const desc = item.Description || item.description || item.Message || '';
-    const display = name || (desc.length > 60 ? desc.slice(0, 60) + '…' : desc) || '—';
+    const t = ACT[item.Type || item.type] || { icon: '•', cls: 'other', lbl: 'Atividade' };
+    const time = item.Timestamp || '';
+    const raw = item.Description || '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = raw;
+    const desc = tmp.textContent || tmp.innerText || raw.replace(/<[^>]+>/g,'') || '—';
     return `<div class="mact">
       <div class="maico ${t.cls}">${t.icon}</div>
       <div>
-        <div class="mamain"><strong>${t.lbl}</strong>${display ? ' — ' + display : ''}${team ? ` <span style="color:#8b92a8">· ${team}</span>` : ''}</div>
+        <div class="mamain">${desc}</div>
         ${time ? `<div class="matime">${time}</div>` : ''}
       </div>
     </div>`;
@@ -256,7 +255,7 @@
       if (!r.ok) throw new Error(r.status);
       const d = await r.json();
       console.log('[MaidPad Panel] Activities:', JSON.stringify(d).slice(0, 500));
-      acts = Array.isArray(d) ? d : (d?.Activities || d?.activities || d?.Items || d?.items || d?.Data || d?.data || []);
+      acts = d?.Activities || d?.activities || (Array.isArray(d) ? d : []);
       if (!Array.isArray(acts)) acts = [];
       renderFeed();
     } catch (e) {
