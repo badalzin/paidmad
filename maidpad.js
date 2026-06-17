@@ -122,7 +122,7 @@
   <div class="mg">
     <div class="mc" style="grid-column:span 2"><div class="ml">Limpezas hoje <a href="/Dashboard/Schedule" id="msl">Agenda →</a></div><div id="mjo"><div class="msk"></div></div></div>
     <div class="mc"><div class="ml">Avaliações (30 dias) <a href="/Dashboard/Job/Reviews">Ver →</a></div><div id="mrv"><div class="msk"></div></div></div>
-    <div class="mc"><div class="ml">Chat <a href="/Dashboard/Chat">Abrir →</a></div><div id="mch"><div class="msk"></div></div></div>
+    <div class="mc"><div class="ml">Atividades <a href="/Dashboard/Chat">Chat →</a></div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
   </div>
   <div class="mg mw" style="margin-bottom:14px">
     <div class="mc"><div class="ml">Pagamentos <a href="/Dashboard/Accounting">Financeiro →</a></div><div id="mpa"><div class="msk"></div></div></div>
@@ -133,7 +133,6 @@
       <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue"><div class="msk"></div></div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="mc"><div class="ml">Atividades em tempo real</div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
       <div class="mc"><div class="ml">Chat do dia <a href="/Dashboard/Chat" style="color:#8b92a8;font-size:11px">Abrir →</a></div><div id="mp-chat-day"><div class="msk"></div></div></div>
     </div>
   </div>
@@ -363,7 +362,6 @@
       ['/Dashboard/Company/GetJobSummary',     'mjo', rJ],
       ['/Dashboard/Company/GetReviewSummary',  'mrv', rR],
       ['/Dashboard/Company/GetPaymentSummary', 'mpa', rP],
-      ['/Dashboard/Company/GetChatSummary',    'mch', rCh],
     ];
 
     await Promise.all(calls.map(async ([path, id, render]) => {
