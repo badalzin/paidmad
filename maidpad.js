@@ -125,7 +125,7 @@
     <div class="mc"><div class="ml">Atividades <a href="/Dashboard/Chat">Chat →</a></div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
   </div>
   <div class="mg mw" style="margin-bottom:14px">
-    <div class="mc"><div class="ml">Pagamentos <a href="/Dashboard/Accounting">Financeiro →</a></div><div id="mpa"><div class="msk"></div></div></div>
+    <div class="mc"><div class="ml">Não pagos — ontem <a href="/Dashboard/Accounting">Financeiro →</a></div><div id="mpa"><div class="msk"></div></div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
     <div style="display:flex;flex-direction:column;gap:14px">
@@ -299,16 +299,60 @@
   }
 
   function rP(d) {
-    const s = d.Summary || {};
-    const total = s.Total || 0;
-    const lt7 = s.LessThan7Days || 0;
-    const mt7 = s.MoreThan7Days || 0;
-    const overdue = Math.max(0, total - lt7 - mt7);
-    return `<div class="mbucs">
-      <div class="mbuc ov"><div class="mbamt">${fmt(overdue)}</div><div class="mblbl">Vencidos</div></div>
-      <div class="mbuc sn"><div class="mbamt">${fmt(lt7)}</div><div class="mblbl">Vencem 0–7 dias</div></div>
-      <div class="mbuc lt"><div class="mbamt">${fmt(mt7)}</div><div class="mblbl">Vencem +7 dias</div></div>
-    </div>`;
+    return '<div class="msk"></div>'; // preenchido por fetchUnpaidYesterday
+  }
+
+  async function fetchUnpaidYesterday() {
+    const el = gi('mpa');
+    if (!el) return;
+    try {
+      const edt = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
+      edt.setDate(edt.getDate() - 1);
+      const dateStr = `${edt.getMonth()+1}-${edt.getDate()}-${edt.getFullYear()}`;
+      const fromDate = `${edt.getMonth()+1}/${edt.getDate()}/${edt.getFullYear()-1}`;
+      const toDate = `${edt.getMonth()+1}/${edt.getDate()}/${edt.getFullYear()}`;
+
+      const sched = await fetch(`/Dashboard/Schedule/GetDaySchedule?date=${dateStr}`, {credentials:'include'}).then(r=>r.json());
+      const jobs = (sched.Day?.Teams || []).filter(t=>t.Number>=1&&t.Number<=20).flatMap(t=>(t.Jobs||[]).filter(j=>!j.Cancelled));
+
+      // Buscar detalhes de todos os jobs
+      const details = await Promise.all(jobs.map(j =>
+        fetch(`/Dashboard/Job/GetJobDetailsJSON?id=${j.ID}&jobIndex=0`, {credentials:'include'}).then(r=>r.json())
+      ));
+
+      const unpaid = details.filter(d => !d.JobPaymentDate);
+      if (!unpaid.length) { el.innerHTML = '<div class="msub" style="color:#5be49b">✓ Todos pagos</div>'; return; }
+
+      // Para cada não pago, buscar os 2 últimos métodos de pagamento
+      const rows = await Promise.all(unpaid.map(async d => {
+        let lastMethods = [];
+        try {
+          const hist = await fetch(`/Dashboard/Job/GetReviews?fromDate=${fromDate}&toDate=${toDate}&reviewed=false&clientID=${d.ClientID}`, {credentials:'include'}).then(r=>r.json());
+          const prevJobs = (hist.Jobs || []).filter(j => j.JobID !== d.ID).slice(-3);
+          const prevDetails = await Promise.all(prevJobs.map(j =>
+            fetch(`/Dashboard/Job/GetJobDetailsJSON?id=${j.JobID}&jobIndex=0`, {credentials:'include'}).then(r=>r.json())
+          ));
+          lastMethods = prevDetails.filter(pd => pd.JobPaymentMethod).map(pd => pd.JobPaymentMethod).slice(-2);
+        } catch(e) {}
+        return { name: d.ClientName, charge: d.JobCharge, lastMethods };
+      }));
+
+      const methodColors = {'Zelle':'#5bb4e4','Cash':'#5be49b','Check':'#f5a623','Credit Card':'#9b8af5','Card':'#9b8af5'};
+      el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;">` +
+        rows.map(r => {
+          const tags = r.lastMethods.length
+            ? r.lastMethods.map(m => `<span style="font-size:10px;padding:1px 7px;border-radius:8px;background:rgba(91,180,228,.12);border:1px solid rgba(91,180,228,.3);color:${methodColors[m]||'#8b92a8'}">${m}</span>`).join('')
+            : '<span style="font-size:10px;color:#5a6278">sem histórico</span>';
+          return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1f2e;">
+            <span style="font-size:12px;color:#e8eaf0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</span>
+            <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">${tags}</div>
+            <span style="font-family:monospace;font-size:12px;color:#ff5f5f;flex-shrink:0">$${r.charge}</span>
+          </div>`;
+        }).join('') +
+        `</div>`;
+    } catch(e) {
+      const el2 = gi('mpa'); if (el2) el2.innerHTML = `<div class="merr">Erro: ${e.message}</div>`;
+    }
   }
 
   function rCh(d) {
@@ -361,7 +405,6 @@
     const calls = [
       ['/Dashboard/Company/GetJobSummary',     'mjo', rJ],
       ['/Dashboard/Company/GetReviewSummary',  'mrv', rR],
-      ['/Dashboard/Company/GetPaymentSummary', 'mpa', rP],
     ];
 
     await Promise.all(calls.map(async ([path, id, render]) => {
@@ -380,6 +423,9 @@
 
     // Check unexported reviews
     checkUnexportedReviews();
+
+    // Unpaid jobs yesterday
+    fetchUnpaidYesterday();
 
     // Day jobs + salary
     fetchDayJobsAndSalary();
