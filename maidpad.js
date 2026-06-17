@@ -505,6 +505,9 @@
     // Check unexported reviews
     checkUnexportedReviews();
 
+    // Montar container de msgs (rR não é mais chamado via fetch)
+    const mrvEl = gi('mrv'); if (mrvEl) mrvEl.innerHTML = rR({});
+
     // Today client msgs (auto-refresh 15s)
     fetchTodayClientMsgs();
     clearInterval(window._msgsInterval);
