@@ -122,6 +122,13 @@
       <div class="mfeed" id="mp-overdue"><div class="msk"></div></div>
     </div>
   </div>
+  <div class="mc" style="margin-bottom:14px">
+    <div class="ml">Google Sheets <a href="https://docs.google.com/spreadsheets/d/1sdUF1hL44S6i05LEkeGYd1uU9qqJm_etWgJVzjkwZV8/edit" target="_blank">Abrir planilha →</a></div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <button id="mp-export-btn" class="mbtn" style="padding:8px 16px;font-size:13px;border-color:#5be49b;color:#5be49b;" onclick="exportReviewsToSheets()">📤 Exportar Avaliações</button>
+      <span id="mp-export-status" style="font-size:12px;color:#8b92a8;"></span>
+    </div>
+  </div>
   <div class="mc">
     <div class="ml">Acesso rápido</div>
     <div class="mlinks">
@@ -531,3 +538,102 @@ function freqLabel(freq) {
   };
   return map[String(freq)] || 'Freq '+freq;
 }
+
+
+// ─── Exportar avaliações para Google Sheets ──────────────────────────────────
+const SHEET_ID = '1sdUF1hL44S6i05LEkeGYd1uU9qqJm_etWgJVzjkwZV8';
+const SHEET_TAB = 'feedbacks';
+const _scheduleCache = {};
+
+async function getTeamUsers(jobDate, teamNumber) {
+  const key = jobDate + '_' + teamNumber;
+  if (_scheduleCache[key]) return _scheduleCache[key];
+  try {
+    const parts = jobDate.split('/');
+    let year = parts[2]; if (year.length === 2) year = '20' + year;
+    const dateStr = parts[0] + '-' + parts[1] + '-' + year;
+    const sched = await fetch('/Dashboard/Schedule/GetDaySchedule?date=' + dateStr, {credentials:'include'}).then(r=>r.json());
+    const team = (sched.Day?.Teams || []).find(t => t.Number === teamNumber);
+    if (!team) { _scheduleCache[key] = 'Equipe ' + teamNumber; return _scheduleCache[key]; }
+    const names = (team.Cleaners || []).map(c => c.Name ? c.Name.split(' ').join('') : '').filter(Boolean);
+    _scheduleCache[key] = names.length ? names.join(', ') : ('Equipe ' + teamNumber);
+  } catch(e) { _scheduleCache[key] = 'Equipe ' + teamNumber; }
+  return _scheduleCache[key];
+}
+
+async function exportReviewsToSheets() {
+  const btn = gi('mp-export-btn');
+  const status = gi('mp-export-status');
+  if (btn) { btn.textContent = '⏳ Buscando...'; btn.disabled = true; }
+  if (status) status.textContent = '';
+  try {
+    const toDate = new Date();
+    const fromDate = new Date(); fromDate.setFullYear(fromDate.getFullYear() - 1);
+    const fmtD = function(d) { return (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear(); };
+    const reviewsRes = await fetch('/Dashboard/Job/GetReviews?fromDate=' + fmtD(fromDate) + '&toDate=' + fmtD(toDate) + '&reviewed=true', {credentials:'include'}).then(r=>r.json());
+    const jobs = reviewsRes.Jobs || [];
+    if (!jobs.length) throw new Error('Nenhuma avaliação encontrada');
+    if (status) status.textContent = jobs.length + ' avaliações. Buscando detalhes...';
+
+    const detailed = [];
+    for (const job of jobs) {
+      const det = await fetch('/Dashboard/Job/GetReviewDetails?reviewID=' + job.ReviewID, {credentials:'include'}).then(r=>r.json());
+      const rates = {};
+      (det.Review?.Rates || []).forEach(function(r) { rates[r.Topic.toLowerCase()] = r.Rate; });
+      detailed.push({
+        jobDate: job.JobDate, clientName: job.ClientName, teamNumber: job.TeamNumber,
+        overallRate: job.ReviewRate,
+        punctuality: rates['punctuality'] || rates['nota'] || job.ReviewRate,
+        agility: rates['agility'] || job.ReviewRate,
+        quality: rates['quality'] || job.ReviewRate,
+        comments: det.Review?.Comments || ''
+      });
+    }
+
+    if (status) status.textContent = 'Buscando equipes por dia...';
+    const uniqueKeys = [...new Set(detailed.map(function(d) { return d.jobDate + '_' + d.teamNumber; }))];
+    for (let i = 0; i < Math.min(uniqueKeys.length, 60); i++) {
+      const parts = uniqueKeys[i].split('_');
+      await getTeamUsers(parts[0], parseInt(parts[1]));
+      if (status && (i+1) % 5 === 0) status.textContent = 'Equipes ' + (i+1) + '/' + Math.min(uniqueKeys.length,60) + '...';
+    }
+
+    const rows = detailed.map(function(d) {
+      return {
+        usuario: _scheduleCache[d.jobDate + '_' + d.teamNumber] || ('Equipe ' + d.teamNumber),
+        data: d.jobDate, cliente: d.clientName, nota: d.overallRate,
+        punctuality: d.punctuality, agility: d.agility, quality: d.quality, comentario: d.comments
+      };
+    });
+
+    if (status) status.textContent = 'Enviando para Google Sheets...';
+
+    const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6', max_tokens: 4000,
+        system: 'Você exporta avaliações do MaidPad para o Google Sheets.\nPlanilha ID: ' + SHEET_ID + '\nAba: ' + SHEET_TAB + '\nColunas: A=usuario, B=data, C=cliente, D=nota, E=punctuality, F=agility, G=quality, H=comentario\n\nPASSOS:\n1. Leia a aba "' + SHEET_TAB + '" e descubra a última data na coluna B (linha 1 é cabeçalho)\n2. Filtre as avaliações com data POSTERIOR à última data na planilha (compare no formato M/D/YY ou MM/DD/YYYY)\n3. Insira as novas linhas no final da planilha, em ordem cronológica\n4. Cada linha: [usuario, data, cliente, nota, punctuality, agility, quality, comentario]\n5. Responda APENAS com JSON: {"inserted": N, "skipped": N, "lastDate": "data anterior"}',
+        messages: [{ role: 'user', content: 'Avaliações para exportar (' + rows.length + ' total):\n' + JSON.stringify(rows) }],
+        mcp_servers: [{ type: 'url', url: 'https://sheets.googleapis.com/mcp/v1', name: 'google-sheets-mcp' }]
+      })
+    });
+
+    const apiData = await apiResponse.json();
+    const textBlock = apiData.content?.find(function(c) { return c.type === 'text'; });
+    let result = {};
+    try { result = JSON.parse((textBlock?.text || '{}').replace(/```json|```/g,'').trim()); } catch(e) { result = { raw: textBlock?.text ? textBlock.text.slice(0,300) : 'sem resposta' }; }
+
+    const msg = result.inserted > 0 ? (result.inserted + ' avaliações exportadas') : (result.raw ? ('Resp: ' + result.raw) : 'Planilha já atualizada');
+    if (status) status.textContent = msg;
+    if (btn) {
+      btn.textContent = result.inserted > 0 ? ('✅ ' + result.inserted + ' exportadas') : '✅ OK';
+      setTimeout(function() { btn.textContent = '📤 Exportar Avaliações'; btn.disabled = false; }, 4000);
+    }
+  } catch(e) {
+    if (status) status.textContent = 'Erro: ' + e.message;
+    if (btn) { btn.textContent = '❌ Erro'; setTimeout(function() { btn.textContent = '📤 Exportar Avaliações'; btn.disabled = false; }, 3000); }
+    console.error('[MaidPad Export]', e);
+  }
+}
+})();
