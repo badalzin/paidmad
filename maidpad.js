@@ -129,6 +129,12 @@
       <span id="mp-export-status" style="font-size:12px;color:#8b92a8;"></span>
     </div>
   </div>
+  <div class="mg mw" style="margin-bottom:14px">
+    <div class="mc">
+      <div class="ml">Chat do dia <a href="/Dashboard/Chat" style="color:#8b92a8;font-size:11px">Abrir →</a></div>
+      <div id="mp-chat-day"><div class="msk"></div></div>
+    </div>
+  </div>
   <div class="mc">
     <div class="ml">Acesso rápido</div>
     <div class="mlinks">
@@ -275,6 +281,7 @@
     gi('mpp').className = 'mpp';
     gi('mpt').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     fetchOverdueClients();
+    fetchChatDay();
     clearTimeout(timer);
     timer = setTimeout(fetchAll, 30000);
   }
@@ -649,6 +656,108 @@ async function exportReviewsToSheets() {
     console.error('[MaidPad Export]', e);
   }
 }
+
+  async function fetchChatDay() {
+    const el = gi('mp-chat-day');
+    if (!el) return;
+    try {
+      // Get today's schedule for client names
+      const today = new Date();
+      const fmtD = function(d) { return (d.getMonth()+1)+'-'+d.getDate()+'-'+d.getFullYear(); };
+      const [chatRes, schedRes] = await Promise.all([
+        fetch('/Dashboard/Chat/GetChatsFromDate?type=2&date=&search=&newerChats=false&pageSize=200', {credentials:'include'}).then(r=>r.json()),
+        fetch('/Dashboard/Schedule/GetDaySchedule?date='+fmtD(today), {credentials:'include'}).then(r=>r.json())
+      ]);
+
+      const chats = chatRes.Chats || [];
+      const todayUTC = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
+      // Filter chats with activity today (date is UTC)
+      const todayChats = chats.filter(function(c) {
+        return c.LastMessageDate && c.LastMessageDate.startsWith(todayUTC);
+      });
+
+      if (!todayChats.length) {
+        el.innerHTML = '<div class="msub">Sem mensagens hoje</div>';
+        return;
+      }
+
+      // Build set of clients with jobs today
+      const jobClients = new Set();
+      (schedRes.Day?.Teams || []).forEach(function(t) {
+        (t.Jobs || []).forEach(function(j) {
+          if (!j.Cancelled) {
+            jobClients.add((j.DisplayName || j.ClientName || '').toLowerCase().trim());
+          }
+        });
+      });
+
+      // Separate chats
+      const unread = [], readNoReply = [], withJob = [], withJobUnread = [];
+      todayChats.forEach(function(c) {
+        const clientKey = (c.Title || '').toLowerCase().trim();
+        const hasJob = jobClients.has(clientKey);
+        const isUnread = c.Unread > 0;
+        const lastIsClient = c.LastMessageSender !== 'Você';
+
+        if (hasJob) {
+          if (isUnread || lastIsClient) withJobUnread.push(c);
+          else withJob.push(c);
+        } else {
+          if (isUnread) unread.push(c);
+          else if (lastIsClient) readNoReply.push(c);
+        }
+      });
+
+      function chatRow(c, urgency) {
+        const colors = {
+          unread: {bg:'rgba(255,95,95,.08)', border:'rgba(255,95,95,.3)', dot:'#ff5f5f'},
+          pending: {bg:'rgba(245,166,35,.08)', border:'rgba(245,166,35,.3)', dot:'#f5a623'},
+          job: {bg:'rgba(91,228,155,.05)', border:'rgba(91,228,155,.2)', dot:'#5be49b'},
+          normal: {bg:'#181c27', border:'#252a38', dot:'#5a6278'}
+        };
+        const col = colors[urgency] || colors.normal;
+        const time = c.LastMessageDate ? c.LastMessageDate.slice(11,16) : '';
+        const timeEDT = time ? (function() {
+          const h = parseInt(time.slice(0,2)) - 4; // UTC to EDT
+          const m = time.slice(3,5);
+          const hh = ((h + 24) % 24);
+          return (hh > 12 ? hh-12 : hh||12) + ':' + m + (hh >= 12 ? ' PM' : ' AM');
+        })() : '';
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;background:'+col.bg+';border:1px solid '+col.border+';margin-bottom:4px;">' +
+          '<div style="width:7px;height:7px;border-radius:50%;background:'+col.dot+';flex-shrink:0"></div>' +
+          '<span style="font-size:13px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e8eaf0">'+c.Title+'</span>' +
+          (c.Unread > 0 ? '<span style="font-size:11px;background:#ff5f5f;color:#fff;border-radius:10px;padding:1px 6px;flex-shrink:0">'+c.Unread+'</span>' : '') +
+          '<span style="font-size:11px;color:#8b92a8;font-family:monospace;flex-shrink:0">'+timeEDT+'</span>' +
+          '</div>';
+      }
+
+      let html = '';
+
+      if (unread.length) {
+        html += '<div style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#ff5f5f;margin:8px 0 4px">🔴 Sem limpeza hoje — não lidos ('+unread.length+')</div>';
+        html += unread.map(function(c){return chatRow(c,'unread');}).join('');
+      }
+      if (readNoReply.length) {
+        html += '<div style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#f5a623;margin:8px 0 4px">🟡 Sem limpeza hoje — aguardando resposta ('+readNoReply.length+')</div>';
+        html += readNoReply.map(function(c){return chatRow(c,'pending');}).join('');
+      }
+      if (withJobUnread.length) {
+        html += '<div style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#5be49b;margin:8px 0 4px">🟢 Com limpeza hoje — mensagem ('+withJobUnread.length+')</div>';
+        html += withJobUnread.map(function(c){return chatRow(c,'job');}).join('');
+      }
+      if (withJob.length) {
+        html += '<div style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#5a6278;margin:8px 0 4px">Com limpeza hoje — respondidos ('+withJob.length+')</div>';
+        html += withJob.map(function(c){return chatRow(c,'normal');}).join('');
+      }
+
+      if (!html) html = '<div class="msub">Sem mensagens pendentes hoje</div>';
+      el.innerHTML = html;
+    } catch(e) {
+      const el2 = gi('mp-chat-day');
+      if (el2) el2.innerHTML = '<div class="merr">Erro: '+e.message+'</div>';
+    }
+  }
 
   // Expose to global scope for onclick handlers
   window.exportReviewsToSheets = exportReviewsToSheets;
