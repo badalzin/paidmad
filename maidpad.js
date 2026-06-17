@@ -378,7 +378,9 @@
           const endMin = parseT(actEnd);
           const lateStart = (sched != null && startMin != null) ? startMin - sched : null;
           // For ongoing: compare scheduled start to now
-          const nowMin = new Date().getHours()*60 + new Date().getMinutes();
+          // Use EDT (Florida) time for comparison - system times are all EDT
+          const nowEDT = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
+          const nowMin = nowEDT.getHours()*60 + nowEDT.getMinutes();
           const lateNow = (sched != null && !s.finished) ? nowMin - sched : null;
           return {
             ...j,
