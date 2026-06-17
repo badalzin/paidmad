@@ -281,58 +281,113 @@
   gi('mp-x').addEventListener('click', () => { open = false; ov.classList.remove('open'); });
   gi('mpr').addEventListener('click', fetchAll);
 
+  function parseTime12(str) {
+    if (!str) return null;
+    const m = str.trim().match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+    if (!m) return null;
+    let h = parseInt(m[1]), min = parseInt(m[2]);
+    const pm = m[3].toUpperCase() === 'PM';
+    if (pm && h !== 12) h += 12;
+    if (!pm && h === 12) h = 0;
+    const d = new Date(); d.setHours(h, min, 0, 0);
+    return d;
+  }
+
+  function lateTag(scheduledStr, status) {
+    if (status === 'done') return '';
+    const sched = parseTime12(scheduledStr);
+    if (!sched) return '';
+    const now = new Date();
+    const diffMin = Math.round((now - sched) / 60000);
+    if (diffMin <= 0) return '';
+    const label = diffMin < 60 ? `${diffMin}min` : `${Math.floor(diffMin/60)}h${diffMin%60>0?diffMin%60+'min':''}`;
+    return `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,95,95,.15);color:#ff5f5f;border:1px solid rgba(255,95,95,.3);flex-shrink:0">${label} atraso</span>`;
+  }
+
   async function fetchDaySchedule() {
     const dEl = gi('mdy');
     if (!dEl) return;
     try {
       const today = new Date();
       const date = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
-      const r = await fetch(`/Dashboard/Schedule/GetDaySchedule?date=${date}`, { credentials: 'include' });
-      if (!r.ok) throw new Error(r.status);
-      const d = await r.json();
-      const teams = (d.Day && d.Day.Teams) || [];
+
+      // Fetch both APIs in parallel
+      const [schedRes, summaryRes] = await Promise.all([
+        fetch(`/Dashboard/Schedule/GetDaySchedule?date=${date}`, { credentials: 'include' }),
+        fetch('/Dashboard/Home/GetDaySummaryPartialNew?dayShift=0', { credentials: 'include' })
+      ]);
+
+      const schedData = await schedRes.json();
+      const summaryHtml = await summaryRes.text();
+
+      // Parse summary HTML for time + status per client name
+      const tmp = document.createElement('div');
+      tmp.innerHTML = summaryHtml;
+      const jobMap = {};
+      tmp.querySelectorAll('.job').forEach(j => {
+        const name = j.querySelector('.name')?.textContent?.trim();
+        const time = j.querySelector('.time span')?.textContent?.trim();
+        const steps = [...j.querySelectorAll('.step')].map(s => s.className);
+        const onway  = steps.some(s => s.includes('onourway') && s.includes('done'));
+        const started = steps.some(s => s.includes('started') && s.includes('done'));
+        const finished = steps.some(s => s.includes('finished') && s.includes('done'));
+        if (name) jobMap[name.toLowerCase()] = { time, onway, started, finished };
+      });
+
+      const teams = (schedData.Day && schedData.Day.Teams) || [];
       const activeTeams = teams.filter(t => t.Number > 0 && t.Jobs && t.Jobs.length > 0);
+
       if (!activeTeams.length) {
         dEl.innerHTML = '<div class="msub">Nenhuma equipe com limpezas hoje</div>';
         return;
       }
+
       dEl.innerHTML = activeTeams.map(team => {
-        const color = team.Color || 'grey';
-        const name = team.Name ? team.Name : `Equipe ${team.Number}`;
-        const cleaners = (team.Cleaners || []).filter(c => c.CurrentTeam == team.Number || c.TeamID == team.ID);
+        const name = team.Name || `Equipe ${team.Number}`;
+        const cleaners = (team.Cleaners || []);
         const cleanerNames = cleaners.map(c => c.Name ? c.Name.split(' ')[0] : '').filter(Boolean).join(', ');
         const jobs = team.Jobs || [];
-        const done = jobs.filter(j => j.Finished).length;
-        const started = jobs.filter(j => j.Started && !j.Finished).length;
-        const onway = jobs.filter(j => j.OnOurWay && !j.Started).length;
-        const pending = jobs.filter(j => !j.OnOurWay && !j.Started && !j.Finished && !j.Cancelled).length;
-        const cancelled = jobs.filter(j => j.Cancelled).length;
-        const statusColor = done === jobs.length - cancelled ? '#5be49b' : started > 0 ? '#f5a623' : '#8b92a8';
+
+        // Merge status from summary HTML
+        const enriched = jobs.map(j => {
+          const key = (j.DisplayName || j.ClientName || '').toLowerCase();
+          const s = jobMap[key] || {};
+          return { ...j, onway: s.onway || j.OnOurWay, started: s.started || j.Started, finished: s.finished || j.Finished, schedTime: s.time };
+        });
+
+        const done    = enriched.filter(j => j.finished && !j.Cancelled).length;
+        const started = enriched.filter(j => j.started && !j.finished && !j.Cancelled).length;
+        const onway   = enriched.filter(j => j.onway && !j.started && !j.Cancelled).length;
+        const pending = enriched.filter(j => !j.onway && !j.started && !j.finished && !j.Cancelled).length;
+        const total   = enriched.filter(j => !j.Cancelled).length;
+
         return `<div style="background:#0f1117;border:1px solid #252a38;border-radius:10px;padding:12px;margin-bottom:10px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
             <div style="font-size:13px;font-weight:500;color:#e8eaf0;">${name}</div>
             <div style="font-size:11px;color:#8b92a8;">${cleanerNames}</div>
           </div>
-          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-            ${done>0?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(91,228,155,.15);color:#5be49b;border:1px solid rgba(91,228,155,.3)">✓ ${done} concluídos</span>`:''}
+          <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+            ${done>0?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(91,228,155,.15);color:#5be49b;border:1px solid rgba(91,228,155,.3)">✓ ${done}/${total}</span>`:''}
             ${started>0?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(245,166,35,.15);color:#f5a623;border:1px solid rgba(245,166,35,.3)">🧹 ${started} em andamento</span>`:''}
             ${onway>0?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(91,180,228,.15);color:#5bb4e4;border:1px solid rgba(91,180,228,.3)">🚗 ${onway} a caminho</span>`:''}
             ${pending>0?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(90,98,120,.2);color:#8b92a8;border:1px solid #252a38">⏳ ${pending} pendentes</span>`:''}
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;">
-            ${jobs.map(j => {
+            ${enriched.map(j => {
               if (j.Cancelled) return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:#181c27;opacity:.5;">
-                <span style="font-size:11px;color:#ff5f5f">✗</span>
+                <span style="font-size:13px">✗</span>
                 <span style="font-size:12px;color:#5a6278;text-decoration:line-through">${j.DisplayName||j.ClientName}</span>
               </div>`;
-              const ic = j.Finished ? '✅' : j.Started ? '🧹' : j.OnOurWay ? '🚗' : '⏳';
-              const bc = j.Finished ? 'rgba(91,228,155,.08)' : j.Started ? 'rgba(245,166,35,.08)' : j.OnOurWay ? 'rgba(91,180,228,.08)' : '#181c27';
-              const tc = j.Finished ? '#5be49b' : j.Started ? '#f5a623' : j.OnOurWay ? '#5bb4e4' : '#8b92a8';
-              const time = j.JobTimeString || j.JobTime || '';
+              const status = j.finished ? 'done' : j.started ? 'started' : j.onway ? 'onway' : 'pending';
+              const ic = j.finished ? '✅' : j.started ? '🧹' : j.onway ? '🚗' : '⏳';
+              const bc = j.finished ? 'rgba(91,228,155,.08)' : j.started ? 'rgba(245,166,35,.08)' : j.onway ? 'rgba(91,180,228,.08)' : '#181c27';
+              const tc = j.finished ? '#5be49b' : j.started ? '#f5a623' : j.onway ? '#5bb4e4' : '#8b92a8';
+              const late = lateTag(j.schedTime, status);
               return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:${bc};border:1px solid #252a38;">
                 <span style="font-size:13px">${ic}</span>
                 <span style="font-size:12px;font-weight:500;flex:1;color:#e8eaf0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.DisplayName||j.ClientName}</span>
-                ${time?`<span style="font-size:11px;color:${tc};font-family:monospace;flex-shrink:0">${time}</span>`:''}
+                ${j.schedTime?`<span style="font-size:11px;color:${tc};font-family:monospace;flex-shrink:0">${j.schedTime}</span>`:''}
+                ${late}
               </div>`;
             }).join('')}
           </div>
