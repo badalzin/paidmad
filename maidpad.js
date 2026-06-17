@@ -282,7 +282,10 @@
       const sched = await fetch(`/Dashboard/Schedule/GetDaySchedule?date=${dateStr}`, {credentials:'include'}).then(r=>r.json());
       const todayClients = new Set(
         (sched.Day?.Teams || []).filter(t=>t.Number>=1&&t.Number<=20)
-          .flatMap(t=>(t.Jobs||[]).filter(j=>!j.Cancelled).map(j=>j.ClientName?.trim().toLowerCase()))
+          .flatMap(t=>(t.Jobs||[]).filter(j=>!j.Cancelled).flatMap(j=>[
+            j.ClientName?.trim().toLowerCase(),
+            j.DisplayName?.trim().toLowerCase()
+          ].filter(Boolean)))
       );
       if (!todayClients.size) { el.textContent = ''; return; }
 
