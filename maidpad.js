@@ -148,6 +148,10 @@
 
   let open = false, fetched = false, timer, acts = [];
   const gi = id => document.getElementById(id);
+  const fetchT = (url, opts, ms=8000) => Promise.race([
+    fetch(url, opts),
+    new Promise((_,r) => setTimeout(() => r(new Error('timeout')), ms))
+  ]);
   const fmt = v => (v == null || isNaN(v)) ? '—' : '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 0 });
   const n = v => (v == null || v === '') ? '—' : v;
 
@@ -169,7 +173,7 @@
     const el = gi('mjo-day');
     if (!el) return;
     try {
-      const today = new Date();
+      const today = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
       const date = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
       const sched = await fetch(`/Dashboard/Schedule/GetDaySchedule?date=${date}`, {credentials:'include'}).then(r=>r.json());
       const teams = (sched.Day?.Teams || []).filter(t => t.Number >= 1 && t.Number <= 20 && t.Jobs?.length);
@@ -188,7 +192,7 @@
         // Buscar JobCharge de cada job
         const jobCharges = await Promise.all(jobs.map(async job => {
           try {
-            const det = await fetch(`/Dashboard/Job/GetJobDetailsJSON?id=${job.ID}&jobIndex=0`, {credentials:'include'}).then(r=>r.json());
+            const det = await fetchT(`/Dashboard/Job/GetJobDetailsJSON?id=${job.ID}&jobIndex=0`, {credentials:'include'}).then(r=>r.json());
             const charge = parseFloat(det?.JobCharge) || 0;
             totalRevenue += charge;
             allJobDetails.push({name: job.DisplayName || job.ClientName || '—', charge});
@@ -201,7 +205,7 @@
           if (!cleaner.ID || seenCleaners.has(cleaner.ID)) return;
           seenCleaners.add(cleaner.ID);
           try {
-            const pay = await fetch(`/Dashboard/Accounting/GetPayrollPaymentMode?ID=${cleaner.ID}`, {credentials:'include'}).then(r=>r.json());
+            const pay = await fetchT(`/Dashboard/Accounting/GetPayrollPaymentMode?ID=${cleaner.ID}`, {credentials:'include'}).then(r=>r.json());
             const amount = parseFloat(pay?.PaymentAmount) || 0;
             const payBy = pay?.PayBy;
             if (payBy === 8) {
@@ -506,7 +510,8 @@
     checkUnexportedReviews();
 
     // Montar container de msgs (rR não é mais chamado via fetch)
-    const mrvEl = gi('mrv'); if (mrvEl) mrvEl.innerHTML = rR({});
+    const mrvEl = gi('mrv');
+    if (mrvEl && mrvEl.querySelector('.msk')) mrvEl.innerHTML = rR({});
 
     // Today client msgs (auto-refresh 15s)
     fetchTodayClientMsgs();
