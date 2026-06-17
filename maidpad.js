@@ -190,11 +190,19 @@
 
       let totalJobs = 0;
       let totalSalary = 0;
+      let totalRevenue = 0;
       const seenCleaners = new Set();
 
       await Promise.all(teams.map(async team => {
         const jobs = (team.Jobs || []).filter(j => !j.Cancelled);
         totalJobs += jobs.length;
+        // Buscar JobCharge de cada job
+        await Promise.all(jobs.map(async job => {
+          try {
+            const det = await fetch(`/Dashboard/Job/GetJobDetailsJSON?id=${job.ID}&jobIndex=0`, {credentials:'include'}).then(r=>r.json());
+            if (det?.JobCharge) totalRevenue += parseFloat(det.JobCharge) || 0;
+          } catch(e) {}
+        }));
         await Promise.all((team.Cleaners || []).map(async cleaner => {
           if (!cleaner.ID || seenCleaners.has(cleaner.ID)) return;
           seenCleaners.add(cleaner.ID);
@@ -205,10 +213,13 @@
         }));
       }));
 
+      const profit = totalRevenue - totalSalary;
+      const profitColor = profit >= 0 ? '#5be49b' : '#ff5f5f';
       el.innerHTML = `
         <div style="display:flex;gap:16px;flex-wrap:wrap;">
           <div><div style="font-family:monospace;font-size:20px;font-weight:500;color:#e8eaf0">${totalJobs}</div><div style="font-size:11px;color:#8b92a8">limpezas hoje</div></div>
           <div><div style="font-family:monospace;font-size:20px;font-weight:500;color:#f5a623">$${totalSalary.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div><div style="font-size:11px;color:#8b92a8">salários hoje</div></div>
+          <div><div style="font-family:monospace;font-size:20px;font-weight:500;color:${profitColor}">${profit>=0?'+':''}$${Math.abs(profit).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div><div style="font-size:11px;color:#8b92a8">lucro hoje</div></div>
         </div>`;
     } catch(e) {
       const el2 = gi('mjo-day'); if (el2) el2.textContent = '';
