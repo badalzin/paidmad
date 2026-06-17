@@ -871,18 +871,27 @@ async function exportReviewsToSheets() {
     if (!jobs.length) throw new Error('Nenhuma avaliação encontrada');
     if (status) status.textContent = jobs.length + ' avaliações. Buscando detalhes...';
 
+    // Buscar detalhes em lotes de 10 (paralelizado)
     const detailed = [];
-    for (const job of jobs) {
-      const det = await fetch('/Dashboard/Job/GetReviewDetails?reviewID=' + job.ReviewID, {credentials:'include'}).then(r=>r.json());
-      const rates = {};
-      (det.Review?.Rates || []).forEach(function(r) { rates[r.Topic.toLowerCase()] = r.Rate; });
-      detailed.push({
-        jobDate: job.JobDate, clientName: job.ClientName, teamNumber: job.TeamNumber,
-        overallRate: job.ReviewRate,
-        punctuality: rates['punctuality'] || rates['nota'] || job.ReviewRate,
-        agility: rates['agility'] || job.ReviewRate,
-        quality: rates['quality'] || job.ReviewRate,
-        comments: det.Review?.Comments || ''
+    const BATCH = 10;
+    for (let i = 0; i < jobs.length; i += BATCH) {
+      if (status) status.textContent = jobs.length + ' avaliações. Buscando detalhes ' + Math.min(i+BATCH, jobs.length) + '/' + jobs.length + '...';
+      const batch = jobs.slice(i, i + BATCH);
+      const results = await Promise.all(batch.map(function(job) {
+        return fetch('/Dashboard/Job/GetReviewDetails?reviewID=' + job.ReviewID, {credentials:'include'}).then(r=>r.json()).catch(function() { return {}; });
+      }));
+      results.forEach(function(det, idx) {
+        const job = batch[idx];
+        const rates = {};
+        (det.Review?.Rates || []).forEach(function(r) { rates[r.Topic.toLowerCase()] = r.Rate; });
+        detailed.push({
+          jobDate: job.JobDate, clientName: job.ClientName, teamNumber: job.TeamNumber,
+          overallRate: job.ReviewRate,
+          punctuality: rates['punctuality'] || rates['nota'] || job.ReviewRate,
+          agility: rates['agility'] || job.ReviewRate,
+          quality: rates['quality'] || job.ReviewRate,
+          comments: det.Review?.Comments || ''
+        });
       });
     }
 
