@@ -900,24 +900,26 @@ async function exportReviewsToSheets() {
       };
     });
 
-    if (status) status.textContent = 'Enviando para Google Sheets...';
+    if (status) status.textContent = 'Gerando CSV...';
 
-    // Converter rows para array de arrays (formato esperado pelo Apps Script)
-    const rowsArray = rows.map(function(r) {
-      return [r.usuario, r.data, r.cliente, r.nota, r.punctuality, r.agility, r.quality, r.comentario];
+    // Gerar CSV e baixar
+    const header = 'usuario,data,cliente,nota,punctuality,agility,quality,comentario';
+    const csvRows = rows.map(function(r) {
+      return [r.usuario, r.data, r.cliente, r.nota, r.punctuality, r.agility, r.quality,
+        '"' + (r.comentario || '').replace(/"/g, '""') + '"'].join(',');
     });
+    const csv = [header, ...csvRows].join('\n');
+    const blob = new Blob([csv], {type: 'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'avaliacoes_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
 
-    const webhookRes = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rows: rowsArray })
-    });
-    const result = await webhookRes.json();
-
-    const msg = result.inserted > 0 ? (result.inserted + ' avaliações exportadas') : 'Planilha já atualizada';
-    if (status) status.textContent = msg;
+    if (status) status.textContent = rows.length + ' avaliações exportadas';
     if (btn) {
-      btn.textContent = result.inserted > 0 ? ('✅ ' + result.inserted + ' exportadas') : '✅ OK';
+      btn.textContent = '✅ ' + rows.length + ' exportadas';
       setTimeout(function() { btn.textContent = '📤 Exportar Avaliações'; btn.disabled = false; }, 4000);
     }
   } catch(e) {
