@@ -822,6 +822,7 @@ function freqLabel(freq) {
 // ─── Exportar avaliações para Google Sheets ──────────────────────────────────
 const SHEET_ID = '1sdUF1hL44S6i05LEkeGYd1uU9qqJm_etWgJVzjkwZV8';
 const SHEET_TAB = 'feedbacks';
+const WEBHOOK_URL = ''; // Cole aqui a URL do Apps Script após implantar
 const _scheduleCache = {};
 const _employeeLoginMap = {"Muricley Andrade":"muricley","Adriana Emílio Fortunato":"Fortunato","Adriana Esposito":"AEsposito","Adriana Kussler da Rosa":"AdrianaK","Adriana Souza Esposito":"SouzaAdriana","Alan Machado":"Alan","Aline":"aline3","Ana Carla ORLANDO Martins":"Amartins","Ana Conrado Assis":"AAssis","Ana Paula Rodrigues":"ARodrigues","Britany Orozco":"Britany","Cássia Thomaz":"CThomaz","Catia Carvalho":"CCarvalho","Claudia":"Claudinha2024","Cleide Dias":"CDias","Daniella Nóbrega":"DNobrega","Daniely Cristina":"DCristina","Débora Lima":"DeboraLima","Debora Santana":"DSantana","Dhenifer Felix da Silva":"Dhenifer","Edislaine Dutra":"EDutra","Edriane Bispo":"EBispo","Eduardo Verlingue":"jeduardo","Elaine Sa":"ESa","Emilly Carine":"Ecarine","Emily Carine da Silva Oliveira":"EOliveir","Érica Veloso":"EVeloso","Evelyn Silva":"ESilva","Fabiana Marson":"fmarson","Financeiro":"Financeiro","Franciele Oliveira":"Fransilva","Gabriela":"Gabi2024","Gislene Vaz":"GVaz","Greicy Kelly":"GLopes","Helen":"helen2","Helen Sunamita Pereira da Silva":"Lenyanaa","Jennifer Mattos":"JMattos","Jennifer Nunes":"jnfrnunes","Juan":"Juan","Lenyana P. Miertschink":"Lenyanaa","Marcela Larrieu":"Mlarrieu","Melany Ruiz":"saritamerida","Mizzeli":"Mizzeli","Natália Silva":"natalias","Natasha Antonelli Goerck Verlingue":"Natasha","Patricia Fonseca":"PatiFonseca","Paula Gregório":"paulascleaningsquad@gmail.com","Priscila Fonseca":"PriFonseca","Raiana":"Raiana","Raiana D'Ávila Carvalho Marques":"Raiana","Rayssa Miller":"RMiller","Ruth Heinger":"RHeinger","Sara":"saritamerida","Teste teste":"badalschim","Walkiria Jota":"WJota"};
 
@@ -901,23 +902,19 @@ async function exportReviewsToSheets() {
 
     if (status) status.textContent = 'Enviando para Google Sheets...';
 
-    const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6', max_tokens: 4000,
-        system: 'Você exporta avaliações do MaidPad para o Google Sheets.\nPlanilha ID: ' + SHEET_ID + '\nAba: ' + SHEET_TAB + '\nColunas: A=usuario, B=data, C=cliente, D=nota, E=punctuality, F=agility, G=quality, H=comentario\n\nPASSOS:\n1. Leia a aba "' + SHEET_TAB + '" e descubra a última data na coluna B (linha 1 é cabeçalho)\n2. Filtre as avaliações com data POSTERIOR à última data na planilha (compare no formato M/D/YY ou MM/DD/YYYY)\n3. Insira as novas linhas no final da planilha, em ordem cronológica\n4. Cada linha: [usuario, data, cliente, nota, punctuality, agility, quality, comentario]\n5. Responda APENAS com JSON: {"inserted": N, "skipped": N, "lastDate": "data anterior"}',
-        messages: [{ role: 'user', content: 'Avaliações para exportar (' + rows.length + ' total):\n' + JSON.stringify(rows) }],
-        mcp_servers: [{ type: 'url', url: 'https://sheets.googleapis.com/mcp/v1', name: 'google-sheets-mcp' }]
-      })
+    // Converter rows para array de arrays (formato esperado pelo Apps Script)
+    const rowsArray = rows.map(function(r) {
+      return [r.usuario, r.data, r.cliente, r.nota, r.punctuality, r.agility, r.quality, r.comentario];
     });
 
-    const apiData = await apiResponse.json();
-    const textBlock = apiData.content?.find(function(c) { return c.type === 'text'; });
-    let result = {};
-    try { result = JSON.parse((textBlock?.text || '{}').replace(/```json|```/g,'').trim()); } catch(e) { result = { raw: textBlock?.text ? textBlock.text.slice(0,300) : 'sem resposta' }; }
+    const webhookRes = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rows: rowsArray })
+    });
+    const result = await webhookRes.json();
 
-    const msg = result.inserted > 0 ? (result.inserted + ' avaliações exportadas') : (result.raw ? ('Resp: ' + result.raw) : 'Planilha já atualizada');
+    const msg = result.inserted > 0 ? (result.inserted + ' avaliações exportadas') : 'Planilha já atualizada';
     if (status) status.textContent = msg;
     if (btn) {
       btn.textContent = result.inserted > 0 ? ('✅ ' + result.inserted + ' exportadas') : '✅ OK';
