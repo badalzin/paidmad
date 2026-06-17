@@ -249,11 +249,8 @@
       }
     }));
 
-    // Day summary returns HTML — just link
-    const dEl = gi('mdy');
-    if (dEl) dEl.innerHTML = `<div class="msub" style="padding:8px 0">
-      <a href="/Dashboard/Schedule/Day/${ymd}" style="color:#5be49b">📅 Ver agenda de hoje →</a>
-    </div>`;
+    // Day schedule via GetDaySchedule API
+    fetchDaySchedule();
 
     // Activities
     try {
@@ -283,6 +280,69 @@
   ov.addEventListener('click', e => { if (e.target === ov) { open = false; ov.classList.remove('open'); } });
   gi('mp-x').addEventListener('click', () => { open = false; ov.classList.remove('open'); });
   gi('mpr').addEventListener('click', fetchAll);
+
+  async function fetchDaySchedule() {
+    const dEl = gi('mdy');
+    if (!dEl) return;
+    try {
+      const today = new Date();
+      const date = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
+      const r = await fetch(`/Dashboard/Schedule/GetDaySchedule?date=${date}`, { credentials: 'include' });
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json();
+      const teams = (d.Day && d.Day.Teams) || [];
+      const activeTeams = teams.filter(t => t.Number > 0 && t.Jobs && t.Jobs.length > 0);
+      if (!activeTeams.length) {
+        dEl.innerHTML = '<div class="msub">Nenhuma equipe com limpezas hoje</div>';
+        return;
+      }
+      dEl.innerHTML = activeTeams.map(team => {
+        const color = team.Color || 'grey';
+        const name = team.Name ? team.Name : `Equipe ${team.Number}`;
+        const cleaners = (team.Cleaners || []).filter(c => c.CurrentTeam == team.Number || c.TeamID == team.ID);
+        const cleanerNames = cleaners.map(c => c.Name ? c.Name.split(' ')[0] : '').filter(Boolean).join(', ');
+        const jobs = team.Jobs || [];
+        const done = jobs.filter(j => j.Finished).length;
+        const started = jobs.filter(j => j.Started && !j.Finished).length;
+        const onway = jobs.filter(j => j.OnOurWay && !j.Started).length;
+        const pending = jobs.filter(j => !j.OnOurWay && !j.Started && !j.Finished && !j.Cancelled).length;
+        const cancelled = jobs.filter(j => j.Cancelled).length;
+        const statusColor = done === jobs.length - cancelled ? '#5be49b' : started > 0 ? '#f5a623' : '#8b92a8';
+        return `<div style="background:#0f1117;border:1px solid #252a38;border-radius:10px;padding:12px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="font-size:13px;font-weight:500;color:#e8eaf0;">${name}</div>
+            <div style="font-size:11px;color:#8b92a8;">${cleanerNames}</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+            ${done>0?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(91,228,155,.15);color:#5be49b;border:1px solid rgba(91,228,155,.3)">✓ ${done} concluídos</span>`:''}
+            ${started>0?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(245,166,35,.15);color:#f5a623;border:1px solid rgba(245,166,35,.3)">🧹 ${started} em andamento</span>`:''}
+            ${onway>0?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(91,180,228,.15);color:#5bb4e4;border:1px solid rgba(91,180,228,.3)">🚗 ${onway} a caminho</span>`:''}
+            ${pending>0?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(90,98,120,.2);color:#8b92a8;border:1px solid #252a38">⏳ ${pending} pendentes</span>`:''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            ${jobs.map(j => {
+              if (j.Cancelled) return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:#181c27;opacity:.5;">
+                <span style="font-size:11px;color:#ff5f5f">✗</span>
+                <span style="font-size:12px;color:#5a6278;text-decoration:line-through">${j.DisplayName||j.ClientName}</span>
+              </div>`;
+              const ic = j.Finished ? '✅' : j.Started ? '🧹' : j.OnOurWay ? '🚗' : '⏳';
+              const bc = j.Finished ? 'rgba(91,228,155,.08)' : j.Started ? 'rgba(245,166,35,.08)' : j.OnOurWay ? 'rgba(91,180,228,.08)' : '#181c27';
+              const tc = j.Finished ? '#5be49b' : j.Started ? '#f5a623' : j.OnOurWay ? '#5bb4e4' : '#8b92a8';
+              const time = j.JobTimeString || j.JobTime || '';
+              return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:${bc};border:1px solid #252a38;">
+                <span style="font-size:13px">${ic}</span>
+                <span style="font-size:12px;font-weight:500;flex:1;color:#e8eaf0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.DisplayName||j.ClientName}</span>
+                ${time?`<span style="font-size:11px;color:${tc};font-family:monospace;flex-shrink:0">${time}</span>`:''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      const dEl = gi('mdy');
+      if (dEl) dEl.innerHTML = `<div class="merr">Erro: ${e.message}</div>`;
+    }
+  }
 
   // Hook into existing SignalR
   setTimeout(() => {
