@@ -127,20 +127,14 @@
   <div class="mg mw" style="margin-bottom:14px">
     <div class="mc"><div class="ml">Pagamentos <a href="/Dashboard/Accounting">Financeiro →</a></div><div id="mpa"><div class="msk"></div></div></div>
   </div>
-  <div class="mg mhalf" style="margin-bottom:14px">
-    <div class="mc"><div class="ml">Hoje</div><div id="mdy"><div class="msk"></div></div></div>
-    <div class="mc"><div class="ml">Atividades em tempo real</div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
-  </div>
-  <div class="mg mw" style="margin-bottom:14px">
-    <div class="mc">
-      <div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div>
-      <div class="mfeed" id="mp-overdue"><div class="msk"></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="mc"><div class="ml">Hoje</div><div id="mdy"><div class="msk"></div></div></div>
+      <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue"><div class="msk"></div></div></div>
     </div>
-  </div>
-  <div class="mg mw" style="margin-bottom:14px">
-    <div class="mc">
-      <div class="ml">Chat do dia <a href="/Dashboard/Chat" style="color:#8b92a8;font-size:11px">Abrir →</a></div>
-      <div id="mp-chat-day"><div class="msk"></div></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="mc"><div class="ml">Atividades em tempo real</div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
+      <div class="mc"><div class="ml">Chat do dia <a href="/Dashboard/Chat" style="color:#8b92a8;font-size:11px">Abrir →</a></div><div id="mp-chat-day"><div class="msk"></div></div></div>
     </div>
   </div>
   <div class="mc" style="margin-bottom:14px">
