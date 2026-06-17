@@ -127,6 +127,24 @@
     </div>
   </div>
   <div class="mc" style="margin-bottom:14px">
+    <div class="ml">Acesso rápido</div>
+    <div class="mlinks">
+      <a class="mlink" href="/Dashboard">📊 Dashboard</a>
+      <a class="mlink" href="/Dashboard/Schedule" id="msl2">📅 Agenda</a>
+      <a class="mlink" href="/Dashboard/Client">👥 Clientes</a>
+      <a class="mlink" href="/Dashboard/Accounting">💰 Financeiro</a>
+      <a class="mlink" href="/Dashboard/Analytics">📈 Analytics</a>
+      <a class="mlink" href="/Dashboard/Job/Reviews">⭐ Avaliações</a>
+      <a class="mlink" href="/Dashboard/Chat">💬 Chat</a>
+    </div>
+  </div>
+  <div class="mg mw" style="margin-bottom:14px">
+    <div class="mc">
+      <div class="ml">Chat do dia <a href="/Dashboard/Chat" style="color:#8b92a8;font-size:11px">Abrir →</a></div>
+      <div id="mp-chat-day"><div class="msk"></div></div>
+    </div>
+  </div>
+  <div class="mc" style="margin-bottom:14px">
     <div class="ml">Google Sheets <a href="https://docs.google.com/spreadsheets/d/1sdUF1hL44S6i05LEkeGYd1uU9qqJm_etWgJVzjkwZV8/edit" target="_blank">Abrir planilha →</a></div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <button id="mp-export-btn" class="mbtn" style="padding:8px 16px;font-size:13px;border-color:#5be49b;color:#5be49b;" onclick="exportReviewsToSheets()">📤 Exportar Avaliações</button>
