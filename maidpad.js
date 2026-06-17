@@ -148,7 +148,7 @@
 
   let open = false, fetched = false, timer, acts = [];
   const gi = id => document.getElementById(id);
-  const fetchT = (url, opts, ms=8000) => Promise.race([
+  const fetchT = (url, opts, ms=5000) => Promise.race([
     fetch(url, opts),
     new Promise((_,r) => setTimeout(() => r(new Error('timeout')), ms))
   ]);
@@ -276,7 +276,7 @@
         if (pd) { pd.textContent = (newProfit>=0?'+':'') + fmtUSD(newProfit); pd.style.color = newProfit>=0?'#5be49b':'#ff5f5f'; }
       });
     } catch(e) {
-      const el2 = gi('mjo-day'); if (el2) el2.textContent = '';
+      const el2 = gi('mjo-day'); if (el2) el2.innerHTML = `<div class="merr">Erro: ${e.message}</div>`;
     }
   }
 
