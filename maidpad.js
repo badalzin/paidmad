@@ -166,11 +166,11 @@
   }
 
   function rJ(d) {
-    return `<div id="mjo-day"><div class="msk"></div></div>`;
+    return `<div class="msk"></div>`; // placeholder, substituído por fetchDayJobsAndSalary
   }
 
   async function fetchDayJobsAndSalary() {
-    const el = gi('mjo-day');
+    const el = gi('mjo');
     if (!el) return;
     try {
       const today = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
@@ -276,7 +276,7 @@
         if (pd) { pd.textContent = (newProfit>=0?'+':'') + fmtUSD(newProfit); pd.style.color = newProfit>=0?'#5be49b':'#ff5f5f'; }
       });
     } catch(e) {
-      const el2 = gi('mjo-day'); if (el2) el2.innerHTML = `<div class="merr">Erro: ${e.message}</div>`;
+      const el2 = gi('mjo'); if (el2) el2.innerHTML = `<div class="merr">Erro: ${e.message}</div>`;
     }
   }
 
