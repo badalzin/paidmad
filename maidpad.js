@@ -8,7 +8,11 @@
 
 (function () {
   'use strict';
-  if (document.getElementById('mp-toggle')) return;
+  // Remove old panel if exists (force update)
+  const oldToggle = document.getElementById('mp-toggle');
+  const oldRoot = document.getElementById('mp-root');
+  if (oldToggle) oldToggle.remove();
+  if (oldRoot) oldRoot.remove();
 
   const style = document.createElement('style');
   style.textContent = `
