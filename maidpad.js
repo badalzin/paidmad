@@ -277,15 +277,23 @@
         } catch(e) { return text; }
       }
 
+      // Filtrar só msgs reais do cliente (não MaidPad, não reações "Liked")
+      const clientChats = chats.filter(c => {
+        const sender = (c.LastMessageSender || '').toLowerCase();
+        const msg = c.LastMessage || '';
+        if (sender === 'maidpad') return false;
+        if (msg.startsWith('Liked “') || msg.startsWith('Liked "')) return false;
+        return true;
+      });
+      if (!clientChats.length) { el.textContent = ''; return; }
+
       // Montar lista (máx 5)
-      const items = await Promise.all(chats.slice(0,5).map(async c => {
-        const sender = c.LastMessageSender || '';
-        const isPaula = sender.toLowerCase().includes('paula') || sender.toLowerCase().includes('squad');
-        const msgRaw = c.LastMessage || c.LastMessageText || '';
+      const items = await Promise.all(clientChats.slice(0,5).map(async c => {
+        const msgRaw = c.LastMessage || '';
         const translated = msgRaw ? await translate(msgRaw) : '';
         const dateEDT = new Date(new Date(c.LastMessageDate.replace(' ','T')+'Z').toLocaleString('en-US',{timeZone:'America/New_York'}));
         const timeStr = dateEDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
-        return {name: c.Title, translated, isPaula, timeStr, unread: c.Unread};
+        return {name: c.Title, translated, timeStr, unread: c.Unread};
       }));
 
       el.innerHTML = items.map(i => `
@@ -294,9 +302,7 @@
             <span style="color:#e8eaf0;font-weight:600;font-size:11px">${i.name}</span>
             <span style="color:#5a6278;font-size:10px">${i.timeStr}${i.unread?` <span style="color:#ff5f5f">●</span>`:''}</span>
           </div>
-          <div style="color:${i.isPaula?'#8b92a8':'#b0b8cc'};font-size:11px;line-height:1.4;font-style:${i.isPaula?'italic':'normal'}">
-            ${i.isPaula?'Você: ':''}${i.translated||'<em>sem mensagem</em>'}
-          </div>
+          <div style="color:#b0b8cc;font-size:11px;line-height:1.4">${i.translated||'<em>sem mensagem</em>'}</div>
         </div>`).join('');
     } catch(e) {
       const el2 = gi('mrv-msgs'); if (el2) el2.textContent = '';
