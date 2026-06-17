@@ -170,13 +170,7 @@
   }
 
   function rJ(d) {
-    const s = d.Summary || {};
-    return `<div class="mbig">${n(s.Total)}</div><div class="msub">esta semana</div>
-    <div class="mrow">
-      <div><div class="mv">${n(s.Recurring)}</div><div class="mlb">recorrentes</div></div>
-      <div><div class="mv">${n(s.OneTime)}</div><div class="mlb">avulsas</div></div>
-    </div>
-    <div id="mjo-day" style="margin-top:10px;padding-top:10px;border-top:1px solid #252a38;font-size:12px;color:#8b92a8;">calculando hoje...</div>`;
+    return `<div id="mjo-day"><div class="msk"></div></div>`;
   }
 
   async function fetchDayJobsAndSalary() {
@@ -192,6 +186,7 @@
       let totalSalary = 0;
       let totalRevenue = 0;
       const seenCleaners = new Set();
+      const allJobDetails = [];
 
       // PayBy: 5=Diária, 7=Mensal, 8=Porcentagem Fixa, null=Padrão Empresa
       await Promise.all(teams.map(async team => {
@@ -204,8 +199,9 @@
             const det = await fetch(`/Dashboard/Job/GetJobDetailsJSON?id=${job.ID}&jobIndex=0`, {credentials:'include'}).then(r=>r.json());
             const charge = parseFloat(det?.JobCharge) || 0;
             totalRevenue += charge;
+            allJobDetails.push({name: job.DisplayName || job.ClientName || '—', charge});
             return charge;
-          } catch(e) { return 0; }
+          } catch(e) { allJobDetails.push({name: job.DisplayName || job.ClientName || '—', charge:0}); return 0; }
         }));
         const teamRevenue = jobCharges.reduce((a,b) => a+b, 0);
 
@@ -231,12 +227,26 @@
 
       const profit = totalRevenue - totalSalary;
       const profitColor = profit >= 0 ? '#5be49b' : '#ff5f5f';
-      el.innerHTML = `
-        <div style="display:flex;gap:16px;flex-wrap:wrap;">
-          <div><div style="font-family:monospace;font-size:20px;font-weight:500;color:#e8eaf0">${totalJobs}</div><div style="font-size:11px;color:#8b92a8">limpezas hoje</div></div>
-          <div><div style="font-family:monospace;font-size:20px;font-weight:500;color:#f5a623">$${totalSalary.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div><div style="font-size:11px;color:#8b92a8">salários hoje</div></div>
-          <div><div style="font-family:monospace;font-size:20px;font-weight:500;color:${profitColor}">${profit>=0?'+':''}$${Math.abs(profit).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div><div style="font-size:11px;color:#8b92a8">lucro hoje</div></div>
+      const fmtUSD = v => '$' + v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+      // Linha de totais
+      const totalsHtml = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #252a38;margin-bottom:8px;">
+          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:#e8eaf0">${totalJobs}</div><div style="font-size:10px;color:#8b92a8">limpezas</div></div>
+          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:#5bb4e4">${fmtUSD(totalRevenue)}</div><div style="font-size:10px;color:#8b92a8">receita</div></div>
+          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:#f5a623">${fmtUSD(totalSalary)}</div><div style="font-size:10px;color:#8b92a8">salários</div></div>
+          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:${profitColor}">${profit>=0?'+':''}${fmtUSD(profit)}</div><div style="font-size:10px;color:#8b92a8">lucro</div></div>
         </div>`;
+
+      // Lista de clientes
+      const clientsHtml = allJobDetails.map(j =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1a1f2e;">
+          <span style="font-size:12px;color:#e8eaf0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%">${j.name}</span>
+          <span style="font-family:monospace;font-size:12px;color:#5be49b;flex-shrink:0">${j.charge > 0 ? fmtUSD(j.charge) : '—'}</span>
+        </div>`
+      ).join('');
+
+      el.innerHTML = totalsHtml + `<div style="max-height:220px;overflow-y:auto;">${clientsHtml}</div>`;
     } catch(e) {
       const el2 = gi('mjo-day'); if (el2) el2.textContent = '';
     }
