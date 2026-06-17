@@ -121,7 +121,7 @@
   </div>
   <div class="mg">
     <div class="mc" style="grid-column:span 2"><div class="ml">Limpezas hoje <span style="display:flex;gap:8px;align-items:center"><a href="/Dashboard/Schedule" id="msl">Agenda →</a><button id="mjo-refresh" class="mbtn" style="font-size:10px;padding:2px 8px">↻</button></span></div><div id="mjo"><div class="msk"></div></div></div>
-    <div class="mc"><div class="ml">Avaliações (30 dias) <a href="/Dashboard/Job/Reviews">Ver →</a></div><div id="mrv"><div class="msk"></div></div></div>
+    <div class="mc"><div class="ml">Mensagens de hoje <a href="/Dashboard/Chat">Chat →</a></div><div id="mrv"><div class="msk"></div></div></div>
     <div class="mc"><div class="ml">Atividades <a href="/Dashboard/Chat">Chat →</a></div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
   </div>
   <div class="mg mw" style="margin-bottom:14px">
@@ -245,14 +245,7 @@
   }
 
   function rR(d) {
-    const s = d.Summary || {};
-    const sc = s.Average != null ? Math.round(s.Average * 100) / 100 : '—';
-    const cnt = s.Count || 0;
-    const stars = sc !== '—' ? '★'.repeat(Math.round(sc)) + '☆'.repeat(5 - Math.round(sc)) : '';
-    return `<div class="mscr">${sc}</div><div class="mstars">${stars}</div>
-    <div class="msub" style="margin-top:6px">${cnt} avaliações</div>
-    <div id="mrv-badge" style="margin-top:8px;font-size:11px;color:#8b92a8;">verificando planilha...</div>
-    <div id="mrv-msgs" style="margin-top:10px;padding-top:10px;border-top:1px solid #252a38;font-size:11px;color:#8b92a8;">carregando msgs...</div>`;
+    return `<div id="mrv-badge" style="display:none"></div><div id="mrv-msgs" style="font-size:11px;color:#8b92a8;">carregando msgs...</div>`;
   }
 
   async function fetchTodayClientMsgs() {
@@ -460,7 +453,7 @@
 
     const calls = [
       ['/Dashboard/Company/GetJobSummary',     'mjo', rJ],
-      ['/Dashboard/Company/GetReviewSummary',  'mrv', rR],
+
     ];
 
     await Promise.all(calls.map(async ([path, id, render]) => {
