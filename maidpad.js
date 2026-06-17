@@ -543,6 +543,20 @@ function freqLabel(freq) {
 const SHEET_ID = '1sdUF1hL44S6i05LEkeGYd1uU9qqJm_etWgJVzjkwZV8';
 const SHEET_TAB = 'feedbacks';
 const _scheduleCache = {};
+const _employeeLoginMap = {"Muricley Andrade":"muricley","Adriana Emílio Fortunato":"Fortunato","Adriana Esposito":"AEsposito","Adriana Kussler da Rosa":"AdrianaK","Adriana Souza Esposito":"SouzaAdriana","Alan Machado":"Alan","Aline":"aline3","Ana Carla ORLANDO Martins":"Amartins","Ana Conrado Assis":"AAssis","Ana Paula Rodrigues":"ARodrigues","Britany Orozco":"Britany","Cássia Thomaz":"CThomaz","Catia Carvalho":"CCarvalho","Claudia":"Claudinha2024","Cleide Dias":"CDias","Daniella Nóbrega":"DNobrega","Daniely Cristina":"DCristina","Débora Lima":"DeboraLima","Debora Santana":"DSantana","Dhenifer Felix da Silva":"Dhenifer","Edislaine Dutra":"EDutra","Edriane Bispo":"EBispo","Eduardo Verlingue":"jeduardo","Elaine Sa":"ESa","Emilly Carine":"Ecarine","Emily Carine da Silva Oliveira":"EOliveir","Érica Veloso":"EVeloso","Evelyn Silva":"ESilva","Fabiana Marson":"fmarson","Financeiro":"Financeiro","Franciele Oliveira":"Fransilva","Gabriela":"Gabi2024","Gislene Vaz":"GVaz","Greicy Kelly":"GLopes","Helen":"helen2","Helen Sunamita Pereira da Silva":"Lenyanaa","Jennifer Mattos":"JMattos","Jennifer Nunes":"jnfrnunes","Juan":"Juan","Lenyana P. Miertschink":"Lenyanaa","Marcela Larrieu":"Mlarrieu","Melany Ruiz":"saritamerida","Mizzeli":"Mizzeli","Natália Silva":"natalias","Natasha Antonelli Goerck Verlingue":"Natasha","Patricia Fonseca":"PatiFonseca","Paula Gregório":"paulascleaningsquad@gmail.com","Priscila Fonseca":"PriFonseca","Raiana":"Raiana","Raiana D'Ávila Carvalho Marques":"Raiana","Rayssa Miller":"RMiller","Ruth Heinger":"RHeinger","Sara":"saritamerida","Teste teste":"badalschim","Walkiria Jota":"WJota"};
+
+function nameToLogin(fullName) {
+  if (!fullName) return null;
+  // Direct match
+  if (_employeeLoginMap[fullName]) return _employeeLoginMap[fullName];
+  // Try first name only
+  const firstName = fullName.split(' ')[0];
+  for (const [name, login] of Object.entries(_employeeLoginMap)) {
+    if (name.split(' ')[0] === firstName) return login;
+  }
+  // Fallback: name without spaces
+  return fullName.replace(/\s+/g, '');
+}
 
 async function getTeamUsers(jobDate, teamNumber) {
   const key = jobDate + '_' + teamNumber;
@@ -554,8 +568,8 @@ async function getTeamUsers(jobDate, teamNumber) {
     const sched = await fetch('/Dashboard/Schedule/GetDaySchedule?date=' + dateStr, {credentials:'include'}).then(r=>r.json());
     const team = (sched.Day?.Teams || []).find(t => t.Number === teamNumber);
     if (!team) { _scheduleCache[key] = 'Equipe ' + teamNumber; return _scheduleCache[key]; }
-    const names = (team.Cleaners || []).map(c => c.Name ? c.Name.split(' ').join('') : '').filter(Boolean);
-    _scheduleCache[key] = names.length ? names.join(', ') : ('Equipe ' + teamNumber);
+    const logins = (team.Cleaners || []).map(c => nameToLogin(c.Name)).filter(Boolean);
+    _scheduleCache[key] = logins.length ? logins.join(', ') : ('Equipe ' + teamNumber);
   } catch(e) { _scheduleCache[key] = 'Equipe ' + teamNumber; }
   return _scheduleCache[key];
 }
