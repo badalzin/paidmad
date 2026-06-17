@@ -107,6 +107,18 @@
       <button class="mbtn" id="mpr">↻ Atualizar</button>
     </div>
   </div>
+  <div class="mc" style="margin-bottom:14px">
+    <div class="ml">Acesso rápido</div>
+    <div class="mlinks">
+      <a class="mlink" href="/Dashboard">📊 Dashboard</a>
+      <a class="mlink" href="/Dashboard/Schedule" id="msl2">📅 Agenda</a>
+      <a class="mlink" href="/Dashboard/Client">👥 Clientes</a>
+      <a class="mlink" href="/Dashboard/Accounting">💰 Financeiro</a>
+      <a class="mlink" href="/Dashboard/Analytics">📈 Analytics</a>
+      <a class="mlink" href="/Dashboard/Job/Reviews">⭐ Avaliações</a>
+      <a class="mlink" href="/Dashboard/Chat">💬 Chat</a>
+    </div>
+  </div>
   <div class="mg">
     <div class="mc"><div class="ml">Clientes <a href="/Dashboard/Client">Ver →</a></div><div id="mcl"><div class="msk"></div></div></div>
     <div class="mc"><div class="ml">Limpezas esta semana <a href="/Dashboard/Schedule" id="msl">Agenda →</a></div><div id="mjo"><div class="msk"></div></div></div>
@@ -124,18 +136,6 @@
     <div class="mc">
       <div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div>
       <div class="mfeed" id="mp-overdue"><div class="msk"></div></div>
-    </div>
-  </div>
-  <div class="mc" style="margin-bottom:14px">
-    <div class="ml">Acesso rápido</div>
-    <div class="mlinks">
-      <a class="mlink" href="/Dashboard">📊 Dashboard</a>
-      <a class="mlink" href="/Dashboard/Schedule" id="msl2">📅 Agenda</a>
-      <a class="mlink" href="/Dashboard/Client">👥 Clientes</a>
-      <a class="mlink" href="/Dashboard/Accounting">💰 Financeiro</a>
-      <a class="mlink" href="/Dashboard/Analytics">📈 Analytics</a>
-      <a class="mlink" href="/Dashboard/Job/Reviews">⭐ Avaliações</a>
-      <a class="mlink" href="/Dashboard/Chat">💬 Chat</a>
     </div>
   </div>
   <div class="mg mw" style="margin-bottom:14px">
