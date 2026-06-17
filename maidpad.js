@@ -184,7 +184,52 @@
     const cnt = s.Count || 0;
     const stars = sc !== '—' ? '★'.repeat(Math.round(sc)) + '☆'.repeat(5 - Math.round(sc)) : '';
     return `<div class="mscr">${sc}</div><div class="mstars">${stars}</div>
-    <div class="msub" style="margin-top:6px">${cnt} avaliações</div>`;
+    <div class="msub" style="margin-top:6px">${cnt} avaliações</div>
+    <div id="mrv-badge" style="margin-top:8px;font-size:11px;color:#8b92a8;">verificando planilha...</div>`;
+  }
+
+  async function checkUnexportedReviews() {
+    try {
+      const toDate = new Date();
+      const fromDate = new Date(); fromDate.setMonth(fromDate.getMonth() - 1);
+      const fmtD = d => (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear();
+      const reviewsRes = await fetch('/Dashboard/Job/GetReviews?fromDate=' + fmtD(fromDate) + '&toDate=' + fmtD(toDate) + '&reviewed=true', {credentials:'include'}).then(r=>r.json());
+      const jobs = reviewsRes.Jobs || [];
+      if (!jobs.length) { setBadge(0); return; }
+      const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6', max_tokens: 500,
+          system: 'Leia a aba "feedbacks" da planilha ID ' + SHEET_ID + '. Retorne APENAS JSON sem markdown: {"lastDate": "M/D/YYYY"} ou {"lastDate": null} se vazia. Coluna B tem datas, linha 1 é cabeçalho.',
+          messages: [{role:'user', content:'Qual a última data na coluna B?'}],
+          mcp_servers: [{type:'url', url:'https://sheets.googleapis.com/mcp/v1', name:'google-sheets-mcp'}]
+        })
+      }).then(r=>r.json());
+      const txt = (apiRes.content?.find(c=>c.type==='text')?.text || '{}').replace(/```json|```/g,'').trim();
+      let lastDate = null;
+      try { lastDate = JSON.parse(txt).lastDate; } catch(e) {}
+      if (!lastDate) { setBadge(jobs.length); return; }
+      const last = new Date(lastDate);
+      const newOnes = jobs.filter(j => {
+        const parts = j.JobDate.split('/');
+        let y = parts[2]; if (y.length===2) y='20'+y;
+        return new Date(parseInt(y), parseInt(parts[0])-1, parseInt(parts[1])) > last;
+      });
+      setBadge(newOnes.length);
+    } catch(e) {
+      const b = gi('mrv-badge'); if (b) b.textContent = '';
+    }
+  }
+
+  function setBadge(count) {
+    const b = gi('mrv-badge');
+    if (!b) return;
+    if (count > 0) {
+      b.innerHTML = `<span style="background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.4);color:#f5a623;padding:3px 8px;border-radius:10px;font-weight:600;">⚠️ ${count} não exportada${count>1?'s':''}</span>`;
+    } else {
+      b.innerHTML = `<span style="color:#5be49b;">✓ planilha atualizada</span>`;
+    }
   }
 
   function rP(d) {
@@ -268,6 +313,9 @@
 
     // Day schedule via GetDaySchedule API
     fetchDaySchedule();
+
+    // Check unexported reviews
+    checkUnexportedReviews();
 
     // Activities
     try {
