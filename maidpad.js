@@ -822,6 +822,8 @@ function freqLabel(freq) {
 // ─── Exportar avaliações para Google Sheets ──────────────────────────────────
 const SHEET_ID = '1sdUF1hL44S6i05LEkeGYd1uU9qqJm_etWgJVzjkwZV8';
 const SHEET_TAB = 'feedbacks';
+// Última data já exportada (setar na primeira vez)
+if (!localStorage.getItem('mjo_last_export_date')) localStorage.setItem('mjo_last_export_date', '6/16/2026');
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwxHDFx2CE2oOO-JlLQYhLFoqBwXitBTH-VcOoOYTIlKgsH1FdIFOa4uCdo6V41TfsdiA/exec';
 const _scheduleCache = {};
 const _employeeLoginMap = {"Muricley Andrade":"muricley","Adriana Emílio Fortunato":"Fortunato","Adriana Esposito":"AEsposito","Adriana Kussler da Rosa":"AdrianaK","Adriana Souza Esposito":"SouzaAdriana","Alan Machado":"Alan","Aline":"aline3","Ana Carla ORLANDO Martins":"Amartins","Ana Conrado Assis":"AAssis","Ana Paula Rodrigues":"ARodrigues","Britany Orozco":"Britany","Cássia Thomaz":"CThomaz","Catia Carvalho":"CCarvalho","Claudia":"Claudinha2024","Cleide Dias":"CDias","Daniella Nóbrega":"DNobrega","Daniely Cristina":"DCristina","Débora Lima":"DeboraLima","Debora Santana":"DSantana","Dhenifer Felix da Silva":"Dhenifer","Edislaine Dutra":"EDutra","Edriane Bispo":"EBispo","Eduardo Verlingue":"jeduardo","Elaine Sa":"ESa","Emilly Carine":"Ecarine","Emily Carine da Silva Oliveira":"EOliveir","Érica Veloso":"EVeloso","Evelyn Silva":"ESilva","Fabiana Marson":"fmarson","Financeiro":"Financeiro","Franciele Oliveira":"Fransilva","Gabriela":"Gabi2024","Gislene Vaz":"GVaz","Greicy Kelly":"GLopes","Helen":"helen2","Helen Sunamita Pereira da Silva":"Lenyanaa","Jennifer Mattos":"JMattos","Jennifer Nunes":"jnfrnunes","Juan":"Juan","Lenyana P. Miertschink":"Lenyanaa","Marcela Larrieu":"Mlarrieu","Melany Ruiz":"saritamerida","Mizzeli":"Mizzeli","Natália Silva":"natalias","Natasha Antonelli Goerck Verlingue":"Natasha","Patricia Fonseca":"PatiFonseca","Paula Gregório":"paulascleaningsquad@gmail.com","Priscila Fonseca":"PriFonseca","Raiana":"Raiana","Raiana D'Ávila Carvalho Marques":"Raiana","Rayssa Miller":"RMiller","Ruth Heinger":"RHeinger","Sara":"saritamerida","Teste teste":"badalschim","Walkiria Jota":"WJota"};
@@ -902,13 +904,28 @@ async function exportReviewsToSheets() {
 
     if (status) status.textContent = 'Gerando CSV...';
 
+    // Filtrar só avaliações novas (posteriores à última na planilha)
+    const lastExported = localStorage.getItem('mjo_last_export_date');
+    const newRows = lastExported
+      ? rows.filter(function(r) { return new Date(r.data) > new Date(lastExported); })
+      : rows;
+
+    if (!newRows.length) {
+      if (status) status.textContent = 'Planilha já atualizada';
+      if (btn) { btn.textContent = '✅ OK'; setTimeout(function() { btn.textContent = '📤 Exportar Avaliações'; btn.disabled = false; }, 3000); }
+      return;
+    }
+
     // Gerar CSV e baixar
     const header = 'usuario,data,cliente,nota,punctuality,agility,quality,comentario';
-    const csvRows = rows.map(function(r) {
+    const csvRows = newRows.map(function(r) {
       return [r.usuario, r.data, r.cliente, r.nota, r.punctuality, r.agility, r.quality,
         '"' + (r.comentario || '').replace(/"/g, '""') + '"'].join(',');
     });
     const csv = [header, ...csvRows].join('\n');
+    // Salvar última data exportada
+    const lastDate = newRows[newRows.length - 1].data;
+    localStorage.setItem('mjo_last_export_date', lastDate);
     const blob = new Blob([csv], {type: 'text/csv'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -917,9 +934,9 @@ async function exportReviewsToSheets() {
     a.click();
     URL.revokeObjectURL(url);
 
-    if (status) status.textContent = rows.length + ' avaliações exportadas';
+    if (status) status.textContent = newRows.length + ' avaliações exportadas';
     if (btn) {
-      btn.textContent = '✅ ' + rows.length + ' exportadas';
+      btn.textContent = '✅ ' + newRows.length + ' exportadas';
       setTimeout(function() { btn.textContent = '📤 Exportar Avaliações'; btn.disabled = false; }, 4000);
     }
   } catch(e) {
