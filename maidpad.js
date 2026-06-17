@@ -129,24 +129,6 @@
       <span id="mp-export-status" style="font-size:12px;color:#8b92a8;"></span>
     </div>
   </div>
-  <div class="mg mw" style="margin-bottom:14px">
-    <div class="mc">
-      <div class="ml">Chat do dia <a href="/Dashboard/Chat" style="color:#8b92a8;font-size:11px">Abrir →</a></div>
-      <div id="mp-chat-day"><div class="msk"></div></div>
-    </div>
-  </div>
-  <div class="mc">
-    <div class="ml">Acesso rápido</div>
-    <div class="mlinks">
-      <a class="mlink" href="/Dashboard">📊 Dashboard</a>
-      <a class="mlink" href="/Dashboard/Schedule" id="msl2">📅 Agenda</a>
-      <a class="mlink" href="/Dashboard/Client">👥 Clientes</a>
-      <a class="mlink" href="/Dashboard/Accounting">💰 Financeiro</a>
-      <a class="mlink" href="/Dashboard/Analytics">📈 Analytics</a>
-      <a class="mlink" href="/Dashboard/Job/Reviews">⭐ Avaliações</a>
-      <a class="mlink" href="/Dashboard/Chat">💬 Chat</a>
-    </div>
-  </div>
 </div>`;
   document.body.appendChild(ov);
 
@@ -670,11 +652,21 @@ async function exportReviewsToSheets() {
       ]);
 
       const chats = chatRes.Chats || [];
-      const todayUTC = today.toISOString().split('T')[0]; // YYYY-MM-DD
+      // Dates in DB are EDT (Florida). Get today in EDT
+      const nowEDT = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
+      const todayEDT = nowEDT.getFullYear()+'-'+String(nowEDT.getMonth()+1).padStart(2,'0')+'-'+String(nowEDT.getDate()).padStart(2,'0');
+      const yesterdayEDT = (function(){var d=new Date(nowEDT);d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
 
-      // Filter chats with activity today (date is UTC)
+      // DB stores UTC but activity happened on EDT date - check both today and yesterday UTC dates
       const todayChats = chats.filter(function(c) {
-        return c.LastMessageDate && c.LastMessageDate.startsWith(todayUTC);
+        if (!c.LastMessageDate) return false;
+        // Parse DB timestamp as EDT equivalent
+        const dbDate = c.LastMessageDate.slice(0,10);
+        // Message is "today" if its EDT date matches today or if it's from yesterday UTC (still today EDT)
+        const msgDateUTC = new Date(c.LastMessageDate.replace(' ','T')+'Z');
+        const msgDateEDT = new Date(msgDateUTC.toLocaleString('en-US',{timeZone:'America/New_York'}));
+        const msgEDTStr = msgDateEDT.getFullYear()+'-'+String(msgDateEDT.getMonth()+1).padStart(2,'0')+'-'+String(msgDateEDT.getDate()).padStart(2,'0');
+        return msgEDTStr === todayEDT;
       });
 
       if (!todayChats.length) {
@@ -717,12 +709,9 @@ async function exportReviewsToSheets() {
           normal: {bg:'#181c27', border:'#252a38', dot:'#5a6278'}
         };
         const col = colors[urgency] || colors.normal;
-        const time = c.LastMessageDate ? c.LastMessageDate.slice(11,16) : '';
-        const timeEDT = time ? (function() {
-          const h = parseInt(time.slice(0,2)) - 4; // UTC to EDT
-          const m = time.slice(3,5);
-          const hh = ((h + 24) % 24);
-          return (hh > 12 ? hh-12 : hh||12) + ':' + m + (hh >= 12 ? ' PM' : ' AM');
+        const timeEDT = c.LastMessageDate ? (function() {
+          const d = new Date(c.LastMessageDate.replace(' ','T')+'Z');
+          return d.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hour12:true});
         })() : '';
         return '<div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;background:'+col.bg+';border:1px solid '+col.border+';margin-bottom:4px;">' +
           '<div style="width:7px;height:7px;border-radius:50%;background:'+col.dot+';flex-shrink:0"></div>' +
