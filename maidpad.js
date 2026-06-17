@@ -175,7 +175,44 @@
     <div class="mrow">
       <div><div class="mv">${n(s.Recurring)}</div><div class="mlb">recorrentes</div></div>
       <div><div class="mv">${n(s.OneTime)}</div><div class="mlb">avulsas</div></div>
-    </div>`;
+    </div>
+    <div id="mjo-day" style="margin-top:10px;padding-top:10px;border-top:1px solid #252a38;font-size:12px;color:#8b92a8;">calculando hoje...</div>`;
+  }
+
+  async function fetchDayJobsAndSalary() {
+    const el = gi('mjo-day');
+    if (!el) return;
+    try {
+      const today = new Date();
+      const date = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
+      const sched = await fetch(`/Dashboard/Schedule/GetDaySchedule?date=${date}`, {credentials:'include'}).then(r=>r.json());
+      const teams = (sched.Day?.Teams || []).filter(t => t.Number >= 1 && t.Number <= 20 && t.Jobs?.length);
+
+      let totalJobs = 0;
+      let totalSalary = 0;
+      const seenCleaners = new Set();
+
+      await Promise.all(teams.map(async team => {
+        const jobs = (team.Jobs || []).filter(j => !j.Cancelled);
+        totalJobs += jobs.length;
+        await Promise.all((team.Cleaners || []).map(async cleaner => {
+          if (!cleaner.ID || seenCleaners.has(cleaner.ID)) return;
+          seenCleaners.add(cleaner.ID);
+          try {
+            const pay = await fetch(`/Dashboard/Accounting/GetPayrollPaymentMode?ID=${cleaner.ID}`, {credentials:'include'}).then(r=>r.json());
+            if (pay?.PaymentAmount) totalSalary += parseFloat(pay.PaymentAmount) || 0;
+          } catch(e) {}
+        }));
+      }));
+
+      el.innerHTML = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div><div style="font-family:monospace;font-size:20px;font-weight:500;color:#e8eaf0">${totalJobs}</div><div style="font-size:11px;color:#8b92a8">limpezas hoje</div></div>
+          <div><div style="font-family:monospace;font-size:20px;font-weight:500;color:#f5a623">$${totalSalary.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div><div style="font-size:11px;color:#8b92a8">salários hoje</div></div>
+        </div>`;
+    } catch(e) {
+      const el2 = gi('mjo-day'); if (el2) el2.textContent = '';
+    }
   }
 
   function rR(d) {
@@ -316,6 +353,9 @@
 
     // Check unexported reviews
     checkUnexportedReviews();
+
+    // Day jobs + salary
+    fetchDayJobsAndSalary();
 
     // Activities
     try {
