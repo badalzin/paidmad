@@ -193,22 +193,38 @@
       let totalRevenue = 0;
       const seenCleaners = new Set();
 
+      // PayBy: 5=Diária, 7=Mensal, 8=Porcentagem Fixa, null=Padrão Empresa
       await Promise.all(teams.map(async team => {
         const jobs = (team.Jobs || []).filter(j => !j.Cancelled);
         totalJobs += jobs.length;
+
         // Buscar JobCharge de cada job
-        await Promise.all(jobs.map(async job => {
+        const jobCharges = await Promise.all(jobs.map(async job => {
           try {
             const det = await fetch(`/Dashboard/Job/GetJobDetailsJSON?id=${job.ID}&jobIndex=0`, {credentials:'include'}).then(r=>r.json());
-            if (det?.JobCharge) totalRevenue += parseFloat(det.JobCharge) || 0;
-          } catch(e) {}
+            const charge = parseFloat(det?.JobCharge) || 0;
+            totalRevenue += charge;
+            return charge;
+          } catch(e) { return 0; }
         }));
+        const teamRevenue = jobCharges.reduce((a,b) => a+b, 0);
+
         await Promise.all((team.Cleaners || []).map(async cleaner => {
           if (!cleaner.ID || seenCleaners.has(cleaner.ID)) return;
           seenCleaners.add(cleaner.ID);
           try {
             const pay = await fetch(`/Dashboard/Accounting/GetPayrollPaymentMode?ID=${cleaner.ID}`, {credentials:'include'}).then(r=>r.json());
-            if (pay?.PaymentAmount) totalSalary += parseFloat(pay.PaymentAmount) || 0;
+            const amount = parseFloat(pay?.PaymentAmount) || 0;
+            const payBy = pay?.PayBy;
+            if (payBy === 8) {
+              // Porcentagem fixa: amount é % aplicada à receita da equipe dividida pelo nº de cleaners
+              const cleanerCount = (team.Cleaners || []).length || 1;
+              totalSalary += (amount / 100) * (teamRevenue / cleanerCount);
+            } else if (payBy === 5) {
+              // Diária: valor fixo por dia
+              totalSalary += amount;
+            }
+            // PayBy 7 = Mensal (não conta no diário), null = Padrão Empresa (sem info)
           } catch(e) {}
         }));
       }));
