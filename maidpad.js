@@ -182,12 +182,23 @@
       let totalSalary = 0;
       let totalRevenue = 0;
       const seenCleaners = new Set();
-      const allJobDetails = [];
+      // Lista de clientes já vem do schedule (sem requisição extra)
+      const allJobDetails = teams.flatMap(t =>
+        (t.Jobs||[]).filter(j=>!j.Cancelled).map(j=>({name: j.DisplayName || j.ClientName || '—', charge: 0}))
+      );
+      totalJobs = allJobDetails.length;
 
+      // Mostrar lista de clientes imediatamente (sem valores)
+      el.innerHTML = `<div class="msk" style="width:60%;margin-bottom:8px"></div>` +
+        allJobDetails.map(j=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1a1f2e;">
+          <span style="font-size:12px;color:#e8eaf0">${j.name}</span>
+          <span style="font-family:monospace;font-size:12px;color:#5a6278">...</span>
+        </div>`).join('');
+
+      // Buscar valores em background (JobCharge + salários)
       // PayBy: 5=Diária, 7=Mensal, 8=Porcentagem Fixa, null=Padrão Empresa
       await Promise.all(teams.map(async team => {
         const jobs = (team.Jobs || []).filter(j => !j.Cancelled);
-        totalJobs += jobs.length;
 
         // Buscar JobCharge de cada job
         const jobCharges = await Promise.all(jobs.map(async job => {
@@ -195,9 +206,10 @@
             const det = await fetchT(`/Dashboard/Job/GetJobDetailsJSON?id=${job.ID}&jobIndex=0`, {credentials:'include'}).then(r=>r.json());
             const charge = parseFloat(det?.JobCharge) || 0;
             totalRevenue += charge;
-            allJobDetails.push({name: job.DisplayName || job.ClientName || '—', charge});
+            const idx = allJobDetails.findIndex(d=>d.name === (job.DisplayName||job.ClientName||'—'));
+            if (idx >= 0) allJobDetails[idx].charge = charge;
             return charge;
-          } catch(e) { allJobDetails.push({name: job.DisplayName || job.ClientName || '—', charge:0}); return 0; }
+          } catch(e) { return 0; }
         }));
         const teamRevenue = jobCharges.reduce((a,b) => a+b, 0);
 
@@ -209,14 +221,11 @@
             const amount = parseFloat(pay?.PaymentAmount) || 0;
             const payBy = pay?.PayBy;
             if (payBy === 8) {
-              // Porcentagem fixa: amount é % aplicada à receita da equipe dividida pelo nº de cleaners
               const cleanerCount = (team.Cleaners || []).length || 1;
               totalSalary += (amount / 100) * (teamRevenue / cleanerCount);
             } else if (payBy === 5) {
-              // Diária: valor fixo por dia
               totalSalary += amount;
             }
-            // PayBy 7 = Mensal (não conta no diário), null = Padrão Empresa (sem info)
           } catch(e) {}
         }));
       }));
