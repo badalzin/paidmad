@@ -251,10 +251,66 @@
     const stars = sc !== '—' ? '★'.repeat(Math.round(sc)) + '☆'.repeat(5 - Math.round(sc)) : '';
     return `<div class="mscr">${sc}</div><div class="mstars">${stars}</div>
     <div class="msub" style="margin-top:6px">${cnt} avaliações</div>
-    <div id="mrv-badge" style="margin-top:8px;font-size:11px;color:#8b92a8;">verificando planilha...</div>`;
+    <div id="mrv-badge" style="margin-top:8px;font-size:11px;color:#8b92a8;">verificando planilha...</div>
+    <div id="mrv-msgs" style="margin-top:10px;padding-top:10px;border-top:1px solid #252a38;font-size:11px;color:#8b92a8;">carregando msgs...</div>`;
   }
 
-  async function checkUnexportedReviews() {
+  async function fetchTodayClientMsgs() {
+    const el = gi('mrv-msgs');
+    if (!el) return;
+    try {
+      const edt = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
+      const dateStr = `${edt.getMonth()+1}-${edt.getDate()}-${edt.getFullYear()}`;
+
+      // Buscar clientes com limpeza hoje
+      const sched = await fetch(`/Dashboard/Schedule/GetDaySchedule?date=${dateStr}`, {credentials:'include'}).then(r=>r.json());
+      const todayClients = new Set(
+        (sched.Day?.Teams || []).filter(t=>t.Number>=1&&t.Number<=20)
+          .flatMap(t=>(t.Jobs||[]).filter(j=>!j.Cancelled).map(j=>j.ClientName?.trim().toLowerCase()))
+      );
+      if (!todayClients.size) { el.textContent = ''; return; }
+
+      // Buscar chats recentes
+      const chatRes = await fetch('/Dashboard/Chat/GetChatsFromDate?type=2&date=&search=&newerChats=false&pageSize=200', {credentials:'include'}).then(r=>r.json());
+      const chats = (chatRes.Chats || []).filter(c => todayClients.has(c.Title?.trim().toLowerCase()));
+      if (!chats.length) { el.textContent = ''; return; }
+
+      // Traduzir via Google Translate gratuito
+      async function translate(text) {
+        try {
+          const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=pt&dt=t&q=' + encodeURIComponent(text.slice(0,300));
+          const r = await fetch(url).then(r=>r.json());
+          return r[0]?.map(s=>s[0]).join('') || text;
+        } catch(e) { return text; }
+      }
+
+      // Montar lista (máx 5)
+      const items = await Promise.all(chats.slice(0,5).map(async c => {
+        const sender = c.LastMessageSender || '';
+        const isPaula = sender.toLowerCase().includes('paula') || sender.toLowerCase().includes('squad');
+        const msgRaw = c.LastMessage || c.LastMessageText || '';
+        const translated = msgRaw ? await translate(msgRaw) : '';
+        const dateEDT = new Date(new Date(c.LastMessageDate.replace(' ','T')+'Z').toLocaleString('en-US',{timeZone:'America/New_York'}));
+        const timeStr = dateEDT.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+        return {name: c.Title, translated, isPaula, timeStr, unread: c.Unread};
+      }));
+
+      el.innerHTML = items.map(i => `
+        <div style="padding:6px 0;border-bottom:1px solid #1a1f2e;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+            <span style="color:#e8eaf0;font-weight:600;font-size:11px">${i.name}</span>
+            <span style="color:#5a6278;font-size:10px">${i.timeStr}${i.unread?` <span style="color:#ff5f5f">●</span>`:''}</span>
+          </div>
+          <div style="color:${i.isPaula?'#8b92a8':'#b0b8cc'};font-size:11px;line-height:1.4;font-style:${i.isPaula?'italic':'normal'}">
+            ${i.isPaula?'Você: ':''}${i.translated||'<em>sem mensagem</em>'}
+          </div>
+        </div>`).join('');
+    } catch(e) {
+      const el2 = gi('mrv-msgs'); if (el2) el2.textContent = '';
+    }
+  }
+
+    async function checkUnexportedReviews() {
     try {
       const toDate = new Date();
       const fromDate = new Date(); fromDate.setMonth(fromDate.getMonth() - 1);
@@ -423,6 +479,9 @@
 
     // Check unexported reviews
     checkUnexportedReviews();
+
+    // Today client msgs
+    fetchTodayClientMsgs();
 
     // Unpaid jobs yesterday
     fetchUnpaidYesterday();
