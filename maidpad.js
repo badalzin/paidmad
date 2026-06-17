@@ -120,7 +120,7 @@
     </div>
   </div>
   <div class="mg">
-    <div class="mc" style="grid-column:span 2"><div class="ml">Limpezas hoje <a href="/Dashboard/Schedule" id="msl">Agenda →</a></div><div id="mjo"><div class="msk"></div></div></div>
+    <div class="mc" style="grid-column:span 2"><div class="ml">Limpezas hoje <span style="display:flex;gap:8px;align-items:center"><a href="/Dashboard/Schedule" id="msl">Agenda →</a><button id="mjo-refresh" class="mbtn" style="font-size:10px;padding:2px 8px">↻</button></span></div><div id="mjo"><div class="msk"></div></div></div>
     <div class="mc"><div class="ml">Avaliações (30 dias) <a href="/Dashboard/Job/Reviews">Ver →</a></div><div id="mrv"><div class="msk"></div></div></div>
     <div class="mc"><div class="ml">Atividades <a href="/Dashboard/Chat">Chat →</a></div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
   </div>
@@ -427,8 +427,8 @@
     // Unpaid jobs yesterday
     fetchUnpaidYesterday();
 
-    // Day jobs + salary
-    fetchDayJobsAndSalary();
+    // Day jobs + salary (só carrega uma vez)
+    if (!window._mjoLoaded) { window._mjoLoaded = true; fetchDayJobsAndSalary(); }
 
     // Activities
     try {
@@ -450,6 +450,10 @@
     clearTimeout(timer);
     timer = setTimeout(fetchAll, 30000);
   }
+
+  document.addEventListener('click', e => {
+    if (e.target.id === 'mjo-refresh') { window._mjoLoaded = false; fetchDayJobsAndSalary(); }
+  });
 
   btn.addEventListener('click', () => {
     open = !open;
