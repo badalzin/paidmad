@@ -222,13 +222,11 @@
       const fmtUSD = v => '$' + v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
 
       // Linha de totais
-      const totalsHtml = `
-        <div style="display:flex;gap:16px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #252a38;margin-bottom:8px;">
-          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:#e8eaf0">${totalJobs}</div><div style="font-size:10px;color:#8b92a8">limpezas</div></div>
-          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:#5bb4e4">${fmtUSD(totalRevenue)}</div><div style="font-size:10px;color:#8b92a8">receita</div></div>
-          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:#f5a623">${fmtUSD(totalSalary)}</div><div style="font-size:10px;color:#8b92a8">salários</div></div>
-          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:${profitColor}">${profit>=0?'+':''}${fmtUSD(profit)}</div><div style="font-size:10px;color:#8b92a8">lucro</div></div>
-        </div>`;
+      // Preservar ajuste existente
+      const savedAdj = parseFloat(localStorage.getItem('mjo_salary_adj') || '0') || 0;
+      const adjSalary = totalSalary + savedAdj;
+      const adjProfit = totalRevenue - adjSalary;
+      const adjProfitColor = adjProfit >= 0 ? '#5be49b' : '#ff5f5f';
 
       // Lista de clientes
       const clientsHtml = allJobDetails.map(j =>
@@ -238,7 +236,32 @@
         </div>`
       ).join('');
 
-      el.innerHTML = totalsHtml + `<div style="max-height:220px;overflow-y:auto;">${clientsHtml}</div>`;
+      el.innerHTML = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #252a38;margin-bottom:8px;align-items:flex-end;">
+          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:#e8eaf0">${totalJobs}</div><div style="font-size:10px;color:#8b92a8">limpezas</div></div>
+          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:#5bb4e4">${fmtUSD(totalRevenue)}</div><div style="font-size:10px;color:#8b92a8">receita</div></div>
+          <div>
+            <div style="font-family:monospace;font-size:18px;font-weight:500;color:#f5a623" id="mjo-sal-display">${fmtUSD(adjSalary)}</div>
+            <div style="font-size:10px;color:#8b92a8;display:flex;gap:4px;align-items:center;">
+              sal. + <input id="mjo-adj" type="number" value="${savedAdj}" step="10"
+                style="width:60px;background:#1a1f2e;border:1px solid #2e3447;border-radius:4px;color:#f5a623;font-size:11px;padding:1px 4px;font-family:monospace;">
+            </div>
+          </div>
+          <div><div style="font-family:monospace;font-size:18px;font-weight:500;color:${adjProfitColor}" id="mjo-profit-display">${adjProfit>=0?'+':''}${fmtUSD(adjProfit)}</div><div style="font-size:10px;color:#8b92a8">lucro</div></div>
+        </div>
+        <div style="max-height:220px;overflow-y:auto;">${clientsHtml}</div>`;
+
+      // Listener do ajuste (recalcula sem recarregar)
+      const adjInput = gi('mjo-adj');
+      if (adjInput) adjInput.addEventListener('input', () => {
+        const adj = parseFloat(adjInput.value) || 0;
+        localStorage.setItem('mjo_salary_adj', adj);
+        const newSal = totalSalary + adj;
+        const newProfit = totalRevenue - newSal;
+        const sd = gi('mjo-sal-display'); if (sd) sd.textContent = fmtUSD(newSal);
+        const pd = gi('mjo-profit-display');
+        if (pd) { pd.textContent = (newProfit>=0?'+':'') + fmtUSD(newProfit); pd.style.color = newProfit>=0?'#5be49b':'#ff5f5f'; }
+      });
     } catch(e) {
       const el2 = gi('mjo-day'); if (el2) el2.textContent = '';
     }
