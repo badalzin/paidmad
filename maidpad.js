@@ -281,27 +281,45 @@
   gi('mp-x').addEventListener('click', () => { open = false; ov.classList.remove('open'); });
   gi('mpr').addEventListener('click', fetchAll);
 
-  function parseTime12(str) {
+  function parseT(str) {
     if (!str) return null;
-    const m = str.trim().match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+    const m = str.trim().match(/(\d+):(\d+)\s*(AM|PM)/i);
     if (!m) return null;
     let h = parseInt(m[1]), min = parseInt(m[2]);
-    const pm = m[3].toUpperCase() === 'PM';
-    if (pm && h !== 12) h += 12;
-    if (!pm && h === 12) h = 0;
-    const d = new Date(); d.setHours(h, min, 0, 0);
-    return d;
+    if (m[3].toUpperCase()==='PM' && h!==12) h+=12;
+    if (m[3].toUpperCase()==='AM' && h===12) h=0;
+    return h*60+min;
   }
 
-  function lateTag(scheduledStr, status) {
-    if (status === 'done') return '';
-    const sched = parseTime12(scheduledStr);
-    if (!sched) return '';
-    const now = new Date();
-    const diffMin = Math.round((now - sched) / 60000);
-    if (diffMin <= 0) return '';
-    const label = diffMin < 60 ? `${diffMin}min` : `${Math.floor(diffMin/60)}h${diffMin%60>0?diffMin%60+'min':''}`;
-    return `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,95,95,.15);color:#ff5f5f;border:1px solid rgba(255,95,95,.3);flex-shrink:0">${label} atraso</span>`;
+  function fmtLate(min) {
+    if (min === null || min <= 5) return '';
+    const label = min < 60 ? `${min}min` : `${Math.floor(min/60)}h${min%60>0?min%60+'min':''}`;
+    return label;
+  }
+
+  async function fetchActivities() {
+    const allActs = [];
+    let page = 0, hasMore = true;
+    while (hasMore && page < 10) {
+      const r = await fetch(`/Dashboard/Home/GetActivities?types=2&types=3&types=6&types=1&types=5&page=${page}`, {credentials:'include'});
+      if (!r.ok) break;
+      const d = await r.json();
+      const parsed = (d.Activities||[]).map(a => {
+        const tmp = document.createElement('div'); tmp.innerHTML = a.Description;
+        const b = [...tmp.querySelectorAll('b')].map(x=>x.textContent.trim());
+        return { time: a.Timestamp?.trim(), client: b[1]?.toLowerCase().trim(), action: b[2] };
+      });
+      allActs.push(...parsed);
+      hasMore = d.MorePages;
+      page++;
+    }
+    const realStart = {}, realEnd = {};
+    allActs.forEach(a => {
+      if (!a.client || !a.time) return;
+      if (a.action === 'Iniciado' && !realStart[a.client]) realStart[a.client] = a.time;
+      if (a.action === 'Concluído' && !realEnd[a.client]) realEnd[a.client] = a.time;
+    });
+    return { realStart, realEnd };
   }
 
   async function fetchDaySchedule() {
@@ -311,16 +329,17 @@
       const today = new Date();
       const date = `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`;
 
-      // Fetch both APIs in parallel
-      const [schedRes, summaryRes] = await Promise.all([
+      // Fetch all APIs in parallel
+      const [schedRes, summaryRes, { realStart, realEnd }] = await Promise.all([
         fetch(`/Dashboard/Schedule/GetDaySchedule?date=${date}`, { credentials: 'include' }),
-        fetch('/Dashboard/Home/GetDaySummaryPartialNew?dayShift=0', { credentials: 'include' })
+        fetch('/Dashboard/Home/GetDaySummaryPartialNew?dayShift=0', { credentials: 'include' }),
+        fetchActivities()
       ]);
 
       const schedData = await schedRes.json();
       const summaryHtml = await summaryRes.text();
 
-      // Parse summary HTML for time + status per client name
+      // Parse summary HTML for scheduled time + status per client name
       const tmp = document.createElement('div');
       tmp.innerHTML = summaryHtml;
       const jobMap = {};
@@ -348,11 +367,30 @@
         const cleanerNames = cleaners.map(c => c.Name ? c.Name.split(' ')[0] : '').filter(Boolean).join(', ');
         const jobs = team.Jobs || [];
 
-        // Merge status from summary HTML
+        // Merge status from summary HTML + real times from activities
         const enriched = jobs.map(j => {
-          const key = (j.DisplayName || j.ClientName || '').toLowerCase();
+          const key = (j.DisplayName || j.ClientName || '').toLowerCase().trim();
           const s = jobMap[key] || {};
-          return { ...j, onway: s.onway || j.OnOurWay, started: s.started || j.Started, finished: s.finished || j.Finished, schedTime: s.time };
+          const sched = parseT(s.time);
+          const actStart = realStart[key];
+          const actEnd = realEnd[key];
+          const startMin = parseT(actStart);
+          const endMin = parseT(actEnd);
+          const lateStart = (sched != null && startMin != null) ? startMin - sched : null;
+          // For ongoing: compare scheduled start to now
+          const nowMin = new Date().getHours()*60 + new Date().getMinutes();
+          const lateNow = (sched != null && !s.finished) ? nowMin - sched : null;
+          return {
+            ...j,
+            onway: s.onway || j.OnOurWay,
+            started: s.started || j.Started,
+            finished: s.finished || j.Finished,
+            schedTime: s.time,
+            realStart: actStart,
+            realEnd: actEnd,
+            lateStart,
+            lateNow
+          };
         });
 
         const done    = enriched.filter(j => j.finished && !j.Cancelled).length;
@@ -382,12 +420,21 @@
               const ic = j.finished ? '✅' : j.started ? '🧹' : j.onway ? '🚗' : '⏳';
               const bc = j.finished ? 'rgba(91,228,155,.08)' : j.started ? 'rgba(245,166,35,.08)' : j.onway ? 'rgba(91,180,228,.08)' : '#181c27';
               const tc = j.finished ? '#5be49b' : j.started ? '#f5a623' : j.onway ? '#5bb4e4' : '#8b92a8';
-              const late = lateTag(j.schedTime, status);
+              // Late calculation
+              let lateHtml = '';
+              if (j.finished && j.lateStart !== null) {
+                const l = fmtLate(j.lateStart);
+                if (l) lateHtml = `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,95,95,.15);color:#ff5f5f;border:1px solid rgba(255,95,95,.3);flex-shrink:0">+${l}</span>`;
+              } else if (!j.finished && j.lateNow > 5) {
+                const l = fmtLate(j.lateNow);
+                if (l) lateHtml = `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,95,95,.15);color:#ff5f5f;border:1px solid rgba(255,95,95,.3);flex-shrink:0">${l} atraso</span>`;
+              }
+              const timeDisplay = j.realStart ? `${j.schedTime||''} → ${j.realStart}` : j.schedTime || '';
               return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:${bc};border:1px solid #252a38;">
                 <span style="font-size:13px">${ic}</span>
                 <span style="font-size:12px;font-weight:500;flex:1;color:#e8eaf0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.DisplayName||j.ClientName}</span>
-                ${j.schedTime?`<span style="font-size:11px;color:${tc};font-family:monospace;flex-shrink:0">${j.schedTime}</span>`:''}
-                ${late}
+                ${timeDisplay?`<span style="font-size:11px;color:${tc};font-family:monospace;flex-shrink:0">${timeDisplay}</span>`:''}
+                ${lateHtml}
               </div>`;
             }).join('')}
           </div>
