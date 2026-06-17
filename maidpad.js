@@ -470,7 +470,6 @@
       };
     } catch (e) {}
   }, 3000);
-})();
 
 // ─── Clientes sem limpeza recente ────────────────────────────────────────────
 async function fetchOverdueClients() {
