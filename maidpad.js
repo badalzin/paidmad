@@ -497,7 +497,7 @@
     const sl2 = gi('msl2'); if (sl2) sl2.href = `/Dashboard/Schedule/Day/${ymd}`;
 
     const calls = [
-      ['/Dashboard/Company/GetJobSummary',     'mjo', rJ],
+      ...(window._mjoLoaded ? [] : [['/Dashboard/Company/GetJobSummary', 'mjo', rJ]]),
 
     ];
 
