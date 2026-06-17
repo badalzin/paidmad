@@ -120,8 +120,7 @@
     </div>
   </div>
   <div class="mg">
-    <div class="mc"><div class="ml">Clientes <a href="/Dashboard/Client">Ver →</a></div><div id="mcl"><div class="msk"></div></div></div>
-    <div class="mc"><div class="ml">Limpezas esta semana <a href="/Dashboard/Schedule" id="msl">Agenda →</a></div><div id="mjo"><div class="msk"></div></div></div>
+    <div class="mc" style="grid-column:span 2"><div class="ml">Limpezas hoje <a href="/Dashboard/Schedule" id="msl">Agenda →</a></div><div id="mjo"><div class="msk"></div></div></div>
     <div class="mc"><div class="ml">Avaliações (30 dias) <a href="/Dashboard/Job/Reviews">Ver →</a></div><div id="mrv"><div class="msk"></div></div></div>
     <div class="mc"><div class="ml">Chat <a href="/Dashboard/Chat">Abrir →</a></div><div id="mch"><div class="msk"></div></div></div>
   </div>
@@ -367,7 +366,6 @@
     const sl2 = gi('msl2'); if (sl2) sl2.href = `/Dashboard/Schedule/Day/${ymd}`;
 
     const calls = [
-      ['/Dashboard/Company/GetClientSummary',  'mcl', rC],
       ['/Dashboard/Company/GetJobSummary',     'mjo', rJ],
       ['/Dashboard/Company/GetReviewSummary',  'mrv', rR],
       ['/Dashboard/Company/GetPaymentSummary', 'mpa', rP],
