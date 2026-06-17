@@ -914,12 +914,12 @@ async function exportReviewsToSheets() {
     const el = gi('mp-chat-day');
     if (!el) return;
     try {
-      // Get today's schedule for client names
-      const today = new Date();
+      // Get today's schedule for client names (use EDT date)
+      const todayEDTDate = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
       const fmtD = function(d) { return (d.getMonth()+1)+'-'+d.getDate()+'-'+d.getFullYear(); };
       const [chatRes, schedRes] = await Promise.all([
         fetch('/Dashboard/Chat/GetChatsFromDate?type=2&date=&search=&newerChats=false&pageSize=200', {credentials:'include'}).then(r=>r.json()),
-        fetch('/Dashboard/Schedule/GetDaySchedule?date='+fmtD(today), {credentials:'include'}).then(r=>r.json())
+        fetch('/Dashboard/Schedule/GetDaySchedule?date='+fmtD(todayEDTDate), {credentials:'include'}).then(r=>r.json())
       ]);
 
       const chats = chatRes.Chats || [];
@@ -945,12 +945,13 @@ async function exportReviewsToSheets() {
         return;
       }
 
-      // Build set of clients with jobs today
+      // Build set of clients with jobs today (both ClientName and DisplayName)
       const jobClients = new Set();
       (schedRes.Day?.Teams || []).forEach(function(t) {
         (t.Jobs || []).forEach(function(j) {
           if (!j.Cancelled) {
-            jobClients.add((j.DisplayName || j.ClientName || '').toLowerCase().trim());
+            if (j.ClientName) jobClients.add(j.ClientName.toLowerCase().trim());
+            if (j.DisplayName) jobClients.add(j.DisplayName.toLowerCase().trim());
           }
         });
       });
