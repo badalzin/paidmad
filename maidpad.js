@@ -649,4 +649,8 @@ async function exportReviewsToSheets() {
     console.error('[MaidPad Export]', e);
   }
 }
+
+  // Expose to global scope for onclick handlers
+  window.exportReviewsToSheets = exportReviewsToSheets;
+
 })();
