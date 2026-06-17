@@ -129,7 +129,7 @@
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="mc"><div class="ml">Hoje</div><div id="mdy"><div class="msk"></div></div></div>
+      <div class="mc"><div class="ml">Hoje <button id="mdy-refresh" class="mbtn" style="font-size:10px;padding:2px 8px;margin-left:6px">↻</button></div><div id="mdy"><div class="msk"></div></div></div>
       <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue"><div class="msk"></div></div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:14px">
@@ -314,7 +314,7 @@
       if (!clientChats.length) { el.textContent = ''; return; }
 
       // Montar lista (máx 5)
-      const items = await Promise.all(clientChats.slice(0,5).map(async c => {
+      const items = await Promise.all(clientChats.slice(0,3).map(async c => {
         const msgRaw = c.LastMessage || '';
         const translated = msgRaw ? await translate(msgRaw) : '';
         const dateEDT = new Date(new Date(c.LastMessageDate.replace(' ','T')+'Z').toLocaleString('en-US',{timeZone:'America/New_York'}));
@@ -499,14 +499,16 @@
       }
     }));
 
-    // Day schedule via GetDaySchedule API
-    fetchDaySchedule();
+    // Day schedule: só carrega uma vez
+    if (!window._mdyLoaded) { window._mdyLoaded = true; fetchDaySchedule(); }
 
     // Check unexported reviews
     checkUnexportedReviews();
 
-    // Today client msgs
+    // Today client msgs (auto-refresh 15s)
     fetchTodayClientMsgs();
+    clearInterval(window._msgsInterval);
+    window._msgsInterval = setInterval(fetchTodayClientMsgs, 15000);
 
     // Unpaid jobs yesterday
     fetchUnpaidYesterday();
@@ -537,6 +539,7 @@
 
   document.addEventListener('click', e => {
     if (e.target.id === 'mjo-refresh') { window._mjoLoaded = false; fetchDayJobsAndSalary(); }
+    if (e.target.id === 'mdy-refresh') { window._mdyLoaded = false; fetchDaySchedule(); }
   });
 
   btn.addEventListener('click', () => {
