@@ -897,10 +897,10 @@ async function exportReviewsToSheets() {
 
     if (status) status.textContent = 'Buscando equipes por dia...';
     const uniqueKeys = [...new Set(detailed.map(function(d) { return d.jobDate + '_' + d.teamNumber; }))];
-    for (let i = 0; i < Math.min(uniqueKeys.length, 60); i++) {
+    for (let i = 0; i < uniqueKeys.length; i++) {
       const parts = uniqueKeys[i].split('_');
       await getTeamUsers(parts[0], parseInt(parts[1]));
-      if (status && (i+1) % 5 === 0) status.textContent = 'Equipes ' + (i+1) + '/' + Math.min(uniqueKeys.length,60) + '...';
+      if (status && (i+1) % 5 === 0) status.textContent = 'Equipes ' + (i+1) + '/' + uniqueKeys.length + '...';
     }
 
     const rows = detailed.map(function(d) {
@@ -926,12 +926,11 @@ async function exportReviewsToSheets() {
     }
 
     // Gerar CSV e baixar
-    const header = 'usuario,data,cliente,nota,punctuality,agility,quality,comentario';
     const csvRows = newRows.map(function(r) {
       return [r.usuario, r.data, r.cliente, r.nota, r.punctuality, r.agility, r.quality,
         '"' + (r.comentario || '').replace(/"/g, '""') + '"'].join(',');
     });
-    const csv = [header, ...csvRows].join('\n');
+    const csv = csvRows.join('\n');
     // Salvar última data exportada
     const lastDate = newRows[newRows.length - 1].data;
     localStorage.setItem('mjo_last_export_date', lastDate);
