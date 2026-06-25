@@ -864,7 +864,9 @@ async function exportReviewsToSheets() {
   if (status) status.textContent = '';
   try {
     const toDate = new Date();
-    const fromDate = new Date(); fromDate.setFullYear(fromDate.getFullYear() - 1);
+    // Buscar só a partir da última data exportada (ou 30 dias)
+    const lastExp = localStorage.getItem('mjo_last_export_date');
+    const fromDate = lastExp ? new Date(lastExp) : new Date(Date.now() - 30*24*60*60*1000);
     const fmtD = function(d) { return (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear(); };
     const reviewsRes = await fetch('/Dashboard/Job/GetReviews?fromDate=' + fmtD(fromDate) + '&toDate=' + fmtD(toDate) + '&reviewed=true', {credentials:'include'}).then(r=>r.json());
     const jobs = reviewsRes.Jobs || [];
