@@ -927,8 +927,13 @@ async function exportReviewsToSheets() {
 
     // Gerar CSV e baixar
     const csvRows = newRows.map(function(r) {
-      return [r.usuario, r.data, r.cliente, r.nota, r.punctuality, r.agility, r.quality,
-        '"' + (r.comentario || '').replace(/"/g, '""') + '"'].join(',');
+      return [
+        '"' + (r.usuario || '').replace(/"/g, '""') + '"',
+        r.data,
+        '"' + (r.cliente || '').replace(/"/g, '""') + '"',
+        r.nota, r.punctuality, r.agility, r.quality,
+        '"' + (r.comentario || '').replace(/"/g, '""') + '"'
+      ].join(',');
     });
     const csv = csvRows.join('\n');
     // Salvar última data exportada
