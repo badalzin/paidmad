@@ -163,7 +163,7 @@
     <div class="mc"><div class="ml">Atividades <a href="/Dashboard/Chat">Chat →</a></div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
   </div>
   <div class="mtab-content" id="tab-atrasados">
-    <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue"><div class="msk"></div></div></div>
+    <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue" style="max-height:600px"><div class="msk"></div></div></div>
   </div>
 </div>`;
   document.body.appendChild(ov);
