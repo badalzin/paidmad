@@ -125,6 +125,7 @@
     <button class="mtab" data-tab="chat">💬 Chat</button>
     <button class="mtab" data-tab="financeiro">💰 Financeiro</button>
     <button class="mtab" data-tab="atividades">⚡ Atividades</button>
+    <button class="mtab" data-tab="atrasados">⏰ Atrasados</button>
   </div>
 
   <div class="mtab-content active" id="tab-hoje">
@@ -134,7 +135,6 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
       <div style="display:flex;flex-direction:column;gap:14px">
         <div class="mc"><div class="ml">Hoje <button id="mdy-refresh" class="mbtn" style="font-size:10px;padding:2px 8px;margin-left:6px">↻</button></div><div id="mdy"><div class="msk"></div></div></div>
-        <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue"><div class="msk"></div></div></div>
       </div>
     </div>
   </div>
@@ -161,6 +161,9 @@
 
   <div class="mtab-content" id="tab-atividades">
     <div class="mc"><div class="ml">Atividades <a href="/Dashboard/Chat">Chat →</a></div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
+  </div>
+  <div class="mtab-content" id="tab-atrasados">
+    <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue"><div class="msk"></div></div></div>
   </div>
 </div>`;
   document.body.appendChild(ov);
