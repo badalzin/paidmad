@@ -126,6 +126,7 @@
     <button class="mtab" data-tab="financeiro">💰 Financeiro</button>
     <button class="mtab" data-tab="atividades">⚡ Atividades</button>
     <button class="mtab" data-tab="atrasados">⏰ Atrasados</button>
+    <button class="mtab" data-tab="confirmacao">📋 Confirmação</button>
   </div>
 
   <div class="mtab-content active" id="tab-hoje">
@@ -164,6 +165,9 @@
   </div>
   <div class="mtab-content" id="tab-atrasados">
     <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue" style="max-height:600px"><div class="msk"></div></div></div>
+  </div>
+  <div class="mtab-content" id="tab-confirmacao">
+    <div class="mc"><div class="ml">Aguardando confirmação <a href="/Dashboard/Chat" style="color:#8b92a8;font-size:11px">Chat →</a></div><div id="mp-confirm-list"><div class="msk"></div></div></div>
   </div>
 </div>`;
   document.body.appendChild(ov);
@@ -586,6 +590,7 @@
       e.target.classList.add('active');
       const tc = document.getElementById('tab-' + tab);
       if (tc) { tc.classList.add('active'); tc.style.display='block'; }
+      if (tab === 'confirmacao') fetchConfirmationPending();
       localStorage.setItem('mp_active_tab', tab);
     }
   });
@@ -598,6 +603,69 @@
       if (t) t.click();
     }
   }, 0);
+
+
+  async function fetchConfirmationPending() {
+    const el = gi('mp-confirm-list');
+    if (!el) return;
+    try {
+      // Pegar chats onde última msg é MaidPad com "confirm your cleaning"
+      const chatRes = await fetch('/Dashboard/Chat/GetChatsFromDate?type=2&date=&search=&newerChats=false&pageSize=200', {credentials:'include'}).then(r=>r.json());
+      const pending = (chatRes.Chats || []).filter(c =>
+        c.LastMessageSender === 'MaidPad' &&
+        c.LastMessage?.toLowerCase().includes('confirm your cleaning')
+      );
+
+      if (!pending.length) {
+        el.innerHTML = '<div class="msub" style="color:#5be49b;padding:12px 0">✓ Todos confirmados</div>';
+        return;
+      }
+
+      // Cruzar com schedule da semana atual
+      const edt = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
+      const weekClients = new Set();
+      await Promise.all([0,1,2,3,4,5,6].map(async d => {
+        const day = new Date(edt); day.setDate(edt.getDate() + d);
+        const ds = `${day.getMonth()+1}-${day.getDate()}-${day.getFullYear()}`;
+        const s = await fetch(`/Dashboard/Schedule/GetDaySchedule?date=${ds}`, {credentials:'include'}).then(r=>r.json()).catch(()=>({Day:{Teams:[]}}));
+        (s.Day?.Teams||[]).flatMap(t=>(t.Jobs||[]).filter(j=>!j.Cancelled)).forEach(j => {
+          if (j.ClientName) weekClients.add(j.ClientName.trim().toLowerCase());
+          if (j.DisplayName) weekClients.add(j.DisplayName.trim().toLowerCase());
+        });
+      }));
+
+      // Filtrar só os que têm limpeza esta semana
+      const thisWeek = pending.filter(c => weekClients.has(c.Title?.trim().toLowerCase()));
+      const others = pending.filter(c => !weekClients.has(c.Title?.trim().toLowerCase()));
+
+      const fmtDate = d => {
+        const dt = new Date(new Date(d.replace(' ','T')+'Z').toLocaleString('en-US',{timeZone:'America/New_York'}));
+        return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+      };
+
+      const renderItem = (c, urgent) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1a1f2e;">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:${urgent?'#ff5f5f':'#e8eaf0'}">${c.Title}</div>
+            <div style="font-size:10px;color:#5a6278;margin-top:2px">${c.LastMessage?.slice(0,60)}...</div>
+          </div>
+          <div style="font-size:10px;color:#5a6278;flex-shrink:0;margin-left:8px">${fmtDate(c.LastMessageDate)}</div>
+        </div>`;
+
+      let html = '';
+      if (thisWeek.length) {
+        html += `<div style="font-size:10px;color:#ff5f5f;font-weight:600;margin-bottom:6px">⚠️ LIMPEZA ESTA SEMANA (${thisWeek.length})</div>`;
+        html += thisWeek.map(c => renderItem(c, true)).join('');
+      }
+      if (others.length) {
+        html += `<div style="font-size:10px;color:#8b92a8;font-weight:600;margin:10px 0 6px">OUTRAS (${others.length})</div>`;
+        html += others.map(c => renderItem(c, false)).join('');
+      }
+      el.innerHTML = html;
+    } catch(e) {
+      const el2 = gi('mp-confirm-list'); if (el2) el2.innerHTML = `<div class="merr">Erro: ${e.message}</div>`;
+    }
+  }
 
   btn.addEventListener('click', () => {
     open = !open;
