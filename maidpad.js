@@ -586,8 +586,8 @@
       localStorage.setItem('mp_active_tab', tab);
     }
   });
-  // Ocultar todas as abas exceto a ativa
-  document.querySelectorAll('.mtab-content').forEach(t => { if (!t.classList.contains('active')) t.style.display='none'; });
+  // Ocultar todas as abas e mostrar só a ativa
+  document.querySelectorAll('.mtab-content').forEach(t => { t.style.display = t.classList.contains('active') ? 'block' : 'none'; });
   // Restaurar aba ativa
   const savedTab = localStorage.getItem('mp_active_tab');
   if (savedTab) {
