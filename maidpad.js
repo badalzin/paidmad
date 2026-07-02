@@ -579,13 +579,15 @@
     if (e.target.classList.contains('mtab')) {
       const tab = e.target.dataset.tab;
       document.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.mtab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.mtab-content').forEach(t => { t.classList.remove('active'); t.style.display='none'; });
       e.target.classList.add('active');
       const tc = document.getElementById('tab-' + tab);
-      if (tc) tc.classList.add('active');
+      if (tc) { tc.classList.add('active'); tc.style.display='block'; }
       localStorage.setItem('mp_active_tab', tab);
     }
   });
+  // Ocultar todas as abas exceto a ativa
+  document.querySelectorAll('.mtab-content').forEach(t => { if (!t.classList.contains('active')) t.style.display='none'; });
   // Restaurar aba ativa
   const savedTab = localStorage.getItem('mp_active_tab');
   if (savedTab) {
