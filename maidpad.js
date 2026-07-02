@@ -119,29 +119,47 @@
       <a class="mlink" href="/Dashboard/Chat">💬 Chat</a>
     </div>
   </div>
-  <div class="mg">
-    <div class="mc" style="grid-column:span 2"><div class="ml">Limpezas hoje <span style="display:flex;gap:8px;align-items:center"><a href="/Dashboard/Schedule" id="msl">Agenda →</a><button id="mjo-refresh" class="mbtn" style="font-size:10px;padding:2px 8px">↻</button></span></div><div id="mjo"><div class="msk"></div></div></div>
-    <div class="mc"><div class="ml">Mensagens de hoje <a href="/Dashboard/Chat">Chat →</a></div><div id="mrv"><div class="msk"></div></div></div>
-    <div class="mc"><div class="ml">Atividades <a href="/Dashboard/Chat">Chat →</a></div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
+  <div class="mtabs">
+    <button class="mtab active" data-tab="hoje">🧹 Hoje</button>
+    <button class="mtab" data-tab="chat">💬 Chat</button>
+    <button class="mtab" data-tab="financeiro">💰 Financeiro</button>
+    <button class="mtab" data-tab="atividades">⚡ Atividades</button>
   </div>
-  <div class="mg mw" style="margin-bottom:14px">
-    <div class="mc"><div class="ml">Não pagos — ontem <a href="/Dashboard/Accounting">Financeiro →</a></div><div id="mpa"><div class="msk"></div></div></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="mc"><div class="ml">Hoje <button id="mdy-refresh" class="mbtn" style="font-size:10px;padding:2px 8px;margin-left:6px">↻</button></div><div id="mdy"><div class="msk"></div></div></div>
-      <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue"><div class="msk"></div></div></div>
+
+  <div class="mtab-content active" id="tab-hoje">
+    <div class="mg" style="margin-bottom:14px">
+      <div class="mc" style="grid-column:span 2"><div class="ml">Limpezas hoje <span style="display:flex;gap:8px;align-items:center"><a href="/Dashboard/Schedule" id="msl">Agenda →</a><button id="mjo-refresh" class="mbtn" style="font-size:10px;padding:2px 8px">↻</button></span></div><div id="mjo"><div class="msk"></div></div></div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="mc"><div class="ml">Hoje <button id="mdy-refresh" class="mbtn" style="font-size:10px;padding:2px 8px;margin-left:6px">↻</button></div><div id="mdy"><div class="msk"></div></div></div>
+        <div class="mc"><div class="ml">Clientes atrasados <a href="/Dashboard/Client">Ver todos →</a></div><div class="mfeed" id="mp-overdue"><div class="msk"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mtab-content" id="tab-chat">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="mc"><div class="ml">Mensagens de hoje <a href="/Dashboard/Chat">Chat →</a></div><div id="mrv"><div class="msk"></div></div></div>
       <div class="mc"><div class="ml">Chat do dia <a href="/Dashboard/Chat" style="color:#8b92a8;font-size:11px">Abrir →</a></div><div id="mp-chat-day"><div class="msk"></div></div></div>
     </div>
   </div>
-  <div class="mc" style="margin-bottom:14px">
-    <div class="ml">Google Sheets <a href="https://docs.google.com/spreadsheets/d/1sdUF1hL44S6i05LEkeGYd1uU9qqJm_etWgJVzjkwZV8/edit" target="_blank">Abrir planilha →</a></div>
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <button id="mp-export-btn" class="mbtn" style="padding:8px 16px;font-size:13px;border-color:#5be49b;color:#5be49b;" onclick="exportReviewsToSheets()">📤 Exportar Avaliações</button>
-      <span id="mp-export-status" style="font-size:12px;color:#8b92a8;"></span>
+
+  <div class="mtab-content" id="tab-financeiro">
+    <div class="mg mw" style="margin-bottom:14px">
+      <div class="mc"><div class="ml">Não pagos — ontem <a href="/Dashboard/Accounting">Financeiro →</a></div><div id="mpa"><div class="msk"></div></div></div>
     </div>
+    <div class="mc" style="margin-bottom:14px">
+      <div class="ml">Google Sheets <a href="https://docs.google.com/spreadsheets/d/1sdUF1hL44S6i05LEkeGYd1uU9qqJm_etWgJVzjkwZV8/edit" target="_blank">Abrir planilha →</a></div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <button id="mp-export-btn" class="mbtn" style="padding:8px 16px;font-size:13px;border-color:#5be49b;color:#5be49b;" onclick="exportReviewsToSheets()">📤 Exportar Avaliações</button>
+        <span id="mp-export-status" style="font-size:12px;color:#8b92a8;"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mtab-content" id="tab-atividades">
+    <div class="mc"><div class="ml">Atividades <a href="/Dashboard/Chat">Chat →</a></div><div class="mfeed" id="mfe"><div class="msk"></div></div></div>
   </div>
 </div>`;
   document.body.appendChild(ov);
@@ -557,7 +575,22 @@
   document.addEventListener('click', e => {
     if (e.target.id === 'mjo-refresh') { window._mjoLoaded = false; fetchDayJobsAndSalary(); }
     if (e.target.id === 'mdy-refresh') { window._mdyLoaded = false; fetchDaySchedule(); }
+    if (e.target.classList.contains('mtab')) {
+      const tab = e.target.dataset.tab;
+      document.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.mtab-content').forEach(t => t.classList.remove('active'));
+      e.target.classList.add('active');
+      const tc = document.getElementById('tab-' + tab);
+      if (tc) tc.classList.add('active');
+      localStorage.setItem('mp_active_tab', tab);
+    }
   });
+  // Restaurar aba ativa
+  const savedTab = localStorage.getItem('mp_active_tab');
+  if (savedTab) {
+    const t = document.querySelector('.mtab[data-tab="' + savedTab + '"]');
+    if (t) t.click();
+  }
 
   btn.addEventListener('click', () => {
     open = !open;
