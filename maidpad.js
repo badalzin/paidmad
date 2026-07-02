@@ -35,6 +35,7 @@
 .mt{font-size:11px;color:#8b92a8;font-family:monospace;}
 .mbtn{background:none;border:1px solid #252a38;color:#8b92a8;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;}
 .mbtn:hover{border-color:#5be49b;color:#5be49b;}
+.mtabs{display:flex;gap:0;border-bottom:1px solid #252a38;margin-bottom:14px;}.mtab{padding:8px 16px;font-size:12px;color:#5a6278;cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:color .15s;}.mtab:hover{color:#b0b8cc;}.mtab.active{color:#e8eaf0;border-bottom-color:#5bb4e4;font-weight:600;}.mtab-content{display:none !important;}.mtab-content.active{display:block !important;}
 .mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:14px;}
 .mw{grid-template-columns:1fr;}
 .mhalf{grid-template-columns:1fr 1fr;}
