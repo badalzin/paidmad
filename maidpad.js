@@ -586,14 +586,15 @@
       localStorage.setItem('mp_active_tab', tab);
     }
   });
-  // Ocultar todas as abas e mostrar só a ativa
-  document.querySelectorAll('.mtab-content').forEach(t => { t.style.display = t.classList.contains('active') ? 'block' : 'none'; });
-  // Restaurar aba ativa
-  const savedTab = localStorage.getItem('mp_active_tab');
-  if (savedTab) {
-    const t = document.querySelector('.mtab[data-tab="' + savedTab + '"]');
-    if (t) t.click();
-  }
+  // Ocultar/mostrar abas após DOM estar pronto
+  setTimeout(() => {
+    document.querySelectorAll('.mtab-content').forEach(t => { t.style.display = t.classList.contains('active') ? 'block' : 'none'; });
+    const savedTab = localStorage.getItem('mp_active_tab');
+    if (savedTab) {
+      const t = document.querySelector('.mtab[data-tab="' + savedTab + '"]');
+      if (t) t.click();
+    }
+  }, 0);
 
   btn.addEventListener('click', () => {
     open = !open;
