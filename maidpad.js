@@ -938,15 +938,28 @@ const _scheduleCache = {};
 const _employeeEmailCache = {};
 let _employeeEmailLoaded = false;
 
+function xhrGet(url) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.withCredentials = true;
+    xhr.onload = () => { try { resolve(JSON.parse(xhr.responseText)); } catch(e) { resolve({}); } };
+    xhr.onerror = () => resolve({});
+    xhr.send();
+  });
+}
+
 async function loadEmployeeEmails() {
   if (_employeeEmailLoaded) return;
   try {
-    const r = await fetch('/Dashboard/Preferences/GetEmployees?search=&active=true&inactive=false', {credentials:'include'}).then(r=>r.json());
+    const r = await xhrGet('/Dashboard/Preferences/GetEmployees?search=&active=true&inactive=false');
     await Promise.all((r.Employees || []).map(async emp => {
-      const det = await fetch(`/Dashboard/Preferences/GetEmployeeDetails?id=${emp.ID}`, {credentials:'include'}).then(r=>r.json()).catch(()=>null);
-      if (det?.Employee?.Email) {
-        _employeeEmailCache[det.Employee.FirstName + ' ' + det.Employee.LastName] = det.Employee.Email;
-        _employeeEmailCache[det.Employee.FirstName] = det.Employee.Email;
+      const det = await xhrGet(`/Dashboard/Preferences/GetEmployeeDetails?ID=${emp.ID}`);
+      if (det?.Email) {
+        const fullName = (det.FirstName || '') + ' ' + (det.LastName || '');
+        _employeeEmailCache[fullName.trim()] = det.Email;
+        _employeeEmailCache[det.FirstName] = det.Email;
+        if (emp.Name) _employeeEmailCache[emp.Name] = det.Email;
       }
     }));
     _employeeEmailLoaded = true;
